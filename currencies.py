@@ -15,6 +15,8 @@ def get_symbol(cur):
     return CURRENCIES.get(cur, CURRENCIES['usd'])['symbol']
 
 def convert_price(price, from_cur, to_cur):
+    from_cur = from_cur.lower()  # Фикс: lowercase
+    to_cur = to_cur.lower()  # Фикс: lowercase
     if from_cur not in CURRENCIES or to_cur not in CURRENCIES:
         return price
     rate_from = get_rate(from_cur)

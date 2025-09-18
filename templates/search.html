@@ -21,7 +21,7 @@
 </div>
 
 <script>
-    // AJAX для смены валюты в реальном времени (фикс: map символов, точный split)
+    // AJAX для смены валюты в реальном времени (без релоада, мгновенно)
     document.addEventListener('DOMContentLoaded', function() {
         const currencyForms = document.querySelectorAll('.currency-form');
         const currencySymbols = {
@@ -61,11 +61,8 @@
                                     const parts = priceEl.innerHTML.split(' | ');
                                     if (parts.length === 3) {
                                         const currentPricePart = parts[2];
-                                        let perNight = gettext('per_night', lang);  // Fallback из gettext
-                                        const perNightMatch = currentPricePart.match(/\/.*$/);
-                                        if (perNightMatch) {
-                                            perNight = perNightMatch[0];
-                                        }
+                                        // Фикс: extract per_night, убрать цену и символ
+                                        const perNight = currentPricePart.replace(/^\d+\.?\d*\s+\S+\s+/, '');
                                         parts[2] = `${hotels[index].display_price} ${symbol} ${perNight}`;
                                         priceEl.innerHTML = parts.join(' | ');
                                     }

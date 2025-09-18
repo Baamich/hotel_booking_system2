@@ -8,7 +8,7 @@
         <h2>{{ hotel.name }}</h2>
         <p><strong>{{ gettext('description', lang) }}:</strong> {{ hotel.description }}</p>
         <hr class="border-dark my-4">  <!-- Чёрная полоска -->
-        <p><strong>{{ gettext('per_night', lang) }} {{ hotel.display_price }} {{ currency_symbol }}</strong></p>
+        <p class="price-per-night"><strong>{{ gettext('per_night', lang) }} {{ hotel.display_price }} {{ currency_symbol }}</strong></p>
         
         <h4>{{ gettext('photos', lang) }}</h4>
         <div class="row">
@@ -123,5 +123,53 @@
             btn.textContent = gettext('show_all_reviews', lang);
         }
     }
+
+    // AJAX для смены валюты в деталях (без релоада)
+    document.addEventListener('DOMContentLoaded', function() {
+        const currencyForms = document.querySelectorAll('.currency-form');
+        const currencySymbols = {
+            'eur': '€',
+            'uah': '₴',
+            'rub': '₽',
+            'usd': '$',
+            'mdl': 'L',
+            'ron': 'lei'
+        };
+        currencyForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const currency = this.querySelector('input[name="currency"]').value;
+                const symbol = currencySymbols[currency];
+
+                fetch('/auth/set_currency', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: 'currency=' + encodeURIComponent(currency)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetch(`/search/api/hotels?currency=${currency}`)
+                        .then(response => response.json())
+                        .then(hotels => {
+                            const currentHotelId = '{{ hotel._id }}';
+                            const currentHotel = hotels.find(h => h._id == currentHotelId);
+                            if (currentHotel) {
+                                const priceEl = document.querySelector('.price-per-night');
+                                if (priceEl) {
+                                    const currentText = priceEl.innerHTML;
+                                    const perNightPrefix = currentText.match(/^(.*?) \d+\.?\d* \S+ /)[1];  
+                                    priceEl.innerHTML = `${perNightPrefix} ${currentHotel.display_price} ${symbol}`;
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    });
 </script>
 {% endblock %}
