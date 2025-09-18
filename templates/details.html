@@ -173,6 +173,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Обновить символ валюты в кнопке
+                        document.querySelector('.currency-icon').innerHTML = symbol;
                         fetch('/search/api/convert_price', {
                             method: 'POST',
                             headers: {
