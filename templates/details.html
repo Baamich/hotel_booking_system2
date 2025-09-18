@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hotel.name }} - {{ gettext('details', lang) }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>{{ hotel.name }}</h2>
+        <p><strong>{{ gettext('description', lang) }}:</strong> {{ hotel.description }}</p>
+        <hr class="border-dark my-4">  <!-- Чёрная полоска -->
+        <p><strong>{{ gettext('per_night', lang) }} {{ hotel.display_price }} {{ currency_symbol }}</strong></p>
+        
+        <h4>{{ gettext('photos', lang) }}</h4>
+        <div class="row">
+            {% for photo in hotel.photos %}
+                <div class="col-md-4">
+                    <img src="https://via.placeholder.com/300x200?text={{ photo }}" class="img-fluid mb-3" alt="Photo">
+                </div>
+            {% endfor %}
+        </div>
+        
+        <h4>{{ gettext('map', lang) }}</h4>
+        <!-- Google Maps iframe (замени YOUR_API_KEY на реальный из .env) -->
+        <iframe 
+            width="100%" 
+            height="400" 
+            frameborder="0" 
+            style="border:0" 
+            src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q={{ hotel.city }}" 
+            allowfullscreen>
+        </iframe>
+
+        <h4>{{ gettext('add_review', lang) }}</h4>
+        {% if 'user_id' in session %}
+            <form method="POST" action="{{ url_for('search.add_review', hotel_id=hotel._id) }}" enctype="multipart/form-data">
+                <select name="rating" class="form-control mb-1">
+                    <option value="1">1 звезда</option>
+                    <option value="2">2 звезды</option>
+                    <option value="3">3 звезды</option>
+                    <option value="4">4 звезды</option>
+                    <option value="5" selected>5 звезд</option>
+                </select>
+                <textarea name="text" class="form-control mb-1" placeholder="Ваш отзыв" rows="2"></textarea>
+                <input type="file" name="photo" multiple class="form-control mb-1">
+                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+            </form>
+        {% else %}
+            <p>Войдите, чтобы оставить отзыв.</p>
+        {% endif %}
+        
+        <h4>{{ gettext('reviews', lang) }}</h4>
+        <ul class="list-group">
+            {% set visible_reviews = hotel.reviews[:3] %}
+            {% for review in visible_reviews %}
+                <li class="list-group-item">
+                    <strong>{{ review.user }}:</strong> 
+                    <div class="mt-2">
+                        <p>{{ review.text }}</p>
+                        {% if review.photos %}
+                            <div class="row">
+                                {% for p in review.photos %}
+                                    <div class="col-md-6">
+                                        <img src="{{ url_for('static', filename='uploads/' + p) }}" class="img-fluid mb-2" alt="Review Photo" style="max-width: 150px;">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-end mt-2 mb-0">Рейтинг: {{ review.rating }}/5 ⭐</p>
+                </li>
+            {% endfor %}
+            {% if hotel.reviews|length > 3 %}
+                <li class="list-group-item">
+                    <button onclick="toggleAllReviews()" class="btn btn-outline-primary">{{ gettext('show_all_reviews', lang) }}</button>
+                    <div id="hidden-reviews" style="display:none;" class="mt-3">
+                        {% for review in hotel.reviews[3:] %}
+                            <div class="border p-3 mb-2">
+                                <strong>{{ review.user }}:</strong> 
+                                <p>{{ review.text }}</p>
+                                {% if review.photos %}
+                                    <div class="row">
+                                        {% for p in review.photos %}
+                                            <div class="col-md-6">
+                                                <img src="{{ url_for('static', filename='uploads/' + p) }}" class="img-fluid mb-2" alt="Review Photo" style="max-width: 150px;">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <p class="text-end mt-2 mb-0">Рейтинг: {{ review.rating }}/5 ⭐</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="col-md-4">
+        {% if 'user_id' in session %}
+            <div class="card">
+                <div class="card-body">
+                    <h5>{{ gettext('book', lang) }}</h5>
+                    <form method="POST" action="{{ url_for('booking.book_hotel', hotel_id=hotel._id) }}">
+                        <input type="date" name="date_from" required class="form-control mb-2" placeholder="{{ gettext('date_from', lang) }}">
+                        <input type="date" name="date_to" required class="form-control mb-2" placeholder="{{ gettext('date_to', lang) }}">
+                        <button type="submit" class="btn btn-success w-100">{{ gettext('book_btn', lang) }}</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        <a href="{{ url_for('search.search_hotels') }}" class="btn btn-secondary mt-3">{{ gettext('back', lang) }}</a>
+    </div>
+</div>
+
+<script>
+    function toggleAllReviews() {
+        const hidden = document.getElementById('hidden-reviews');
+        const btn = event.target;
+        if (hidden.style.display === 'none') {
+            hidden.style.display = 'block';
+            btn.textContent = 'Скрыть все отзывы';
+        } else {
+            hidden.style.display = 'none';
+            btn.textContent = gettext('show_all_reviews', lang);
+        }
+    }
+</script>
+{% endblock %}

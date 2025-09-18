@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('register_title', lang) }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>{{ gettext('register_title', lang) }}</h2>
+        <form method="POST" id="registerForm">
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('name', lang) }}</label>
+                <input type="text" class="form-control" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('email', lang) }}</label>
+                <input type="email" class="form-control" id="email" name="email" required onblur="checkEmail()">
+                <div id="email-feedback" class="form-text"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('password', lang) }}</label>
+                <input type="password" class="form-control" id="password" name="password" required oninput="checkPassword()">
+                <div id="password-feedback" class="form-text"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Повторите пароль</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required oninput="checkConfirm()">
+                <div id="confirm-feedback" class="form-text"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ gettext('register_btn', lang) }}</button>
+        </form>
+        <p class="mt-3">{{ gettext('have_account', lang) }} <a href="{{ url_for('auth.login') }}">{{ gettext('login', lang) }}</a></p>
+    </div>
+</div>
+
+<script>
+    // Функция проверки пароля
+    function checkPassword() {
+        const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+        const feedback = document.getElementById('password-feedback');
+        feedback.innerHTML = '';
+
+        if (password.length < 8) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Пароль должен быть минимум 8 символов.';
+            feedback.classList.add('text-danger');
+            return;
+        }
+        if (password.toLowerCase() === email.toLowerCase()) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Пароль не может быть равен email.';
+            feedback.classList.add('text-danger');
+            return;
+        }
+        if (!/[A-Z]/.test(password)) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Минимум 1 заглавная буква.';
+            feedback.classList.add('text-danger');
+            return;
+        }
+        if (!/[a-z]/.test(password)) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Минимум 1 строчная буква.';
+            feedback.classList.add('text-danger');
+            return;
+        }
+        if (!/\d/.test(password)) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Минимум 1 цифра.';
+            feedback.classList.add('text-danger');
+            return;
+        }
+        if (!/[!@#$%^&*()]/.test(password)) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Минимум 1 специальный символ (!@#$%^&*()).';
+            feedback.classList.add('text-danger');
+            return;
+        }
+
+        // OK
+        feedback.innerHTML = '<i class="fas fa-check-circle text-success fade-in"></i> Пароль валиден.';
+        feedback.classList.remove('text-danger');
+        feedback.classList.add('text-success');
+    }
+
+    // Проверка повторения пароля
+    function checkConfirm() {
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm_password').value;
+        const feedback = document.getElementById('confirm-feedback');
+        feedback.innerHTML = '';
+
+        if (confirm !== password) {
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Пароли не совпадают.';
+            feedback.classList.add('text-danger');
+            return;
+        }
+
+        if (confirm) {
+            feedback.innerHTML = '<i class="fas fa-check-circle text-success fade-in"></i> Пароли совпадают.';
+            feedback.classList.remove('text-danger');
+            feedback.classList.add('text-success');
+        }
+    }
+
+    // Проверка email (AJAX)
+    function checkEmail() {
+        const email = document.getElementById('email').value;
+        const feedback = document.getElementById('email-feedback');
+        if (!email) return;
+
+        fetch('/auth/check_email', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'email=' + encodeURIComponent(email)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                feedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Email занят.';
+                feedback.classList.add('text-danger');
+            } else {
+                feedback.innerHTML = '<i class="fas fa-check-circle text-success fade-in"></i> Email свободен.';
+                feedback.classList.remove('text-danger');
+                feedback.classList.add('text-success');
+            }
+        });
+    }
+</script>
+
+<style>
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}

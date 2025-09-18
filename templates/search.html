@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('search_title', lang) }}{% endblock %}
+
+{% block content %}
+<h2>{{ gettext('search_title', lang) }}</h2>
+
+<div class="row" id="hotels-row">
+    {% for hotel in hotels %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200?text={{ hotel.name }}" class="card-img-top" alt="{{ hotel.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ hotel.name }}</h5>
+                    <p class="card-text price-text">{{ hotel.city }} | {{ hotel.category }} {{ gettext('stars', lang) }} | {{ hotel.display_price }} {{ currency_symbol }} {{ gettext('per_night', lang) }}</p>
+                    <a href="{{ url_for('search.hotel_detail', hotel_id=hotel._id) }}" class="btn btn-primary">{{ gettext('details', lang) }}</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // AJAX для смены валюты в реальном времени (фикс: map символов, точный split)
+    document.addEventListener('DOMContentLoaded', function() {
+        const currencyForms = document.querySelectorAll('.currency-form');
+        const currencySymbols = {
+            'eur': '€',
+            'uah': '₴',
+            'rub': '₽',
+            'usd': '$',
+            'mdl': 'L',
+            'ron': 'lei'
+        };
+        currencyForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const currency = this.querySelector('input[name="currency"]').value;
+                const symbol = currencySymbols[currency];
+
+                // AJAX POST на set_currency
+                fetch('/auth/set_currency', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: 'currency=' + encodeURIComponent(currency)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Fetch обновлённых отелей
+                        fetch(`/search/api/hotels?currency=${currency}`)
+                        .then(response => response.json())
+                        .then(hotels => {
+                            // Обновляем цены в карточках
+                            const priceEls = document.querySelectorAll('.price-text');
+                            priceEls.forEach((priceEl, index) => {
+                                if (hotels[index]) {
+                                    const parts = priceEl.innerHTML.split(' | ');
+                                    if (parts.length === 3) {
+                                        const currentPricePart = parts[2];
+                                        let perNight = gettext('per_night', lang);  // Fallback из gettext
+                                        const perNightMatch = currentPricePart.match(/\/.*$/);
+                                        if (perNightMatch) {
+                                            perNight = perNightMatch[0];
+                                        }
+                                        parts[2] = `${hotels[index].display_price} ${symbol} ${perNight}`;
+                                        priceEl.innerHTML = parts.join(' | ');
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

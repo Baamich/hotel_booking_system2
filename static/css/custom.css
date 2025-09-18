@@ -1,0 +1,52 @@
+/* Базовые кастомные стили для проекта */
+
+/* Улучшение для голубой линии на стартовой странице */
+.welcome-line {
+    border-color: #0d6efd !important;  /* Голубой как primary Bootstrap */
+    border-width: 3px !important;
+    border-radius: 10px;
+    opacity: 0.8;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Отступ для navbar-brand ("Главная") */
+.navbar-brand {
+    margin-left: 1rem;
+}
+
+/* Общие стили для карточек отелей (в search) */
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Для форм (register, login) */
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Флажки в dropdown */
+.flag-icon {
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+/* Новый стиль для иконки валюты */
+.currency-icon {
+    font-size: 1.2em;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .welcome-line {
+        width: 80% !important;
+    }
+}

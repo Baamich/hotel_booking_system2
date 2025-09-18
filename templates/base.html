@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ gettext('title', lang) }}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('search.search_hotels') }}">{{ gettext('home', lang) }}</a>
+            <div class="navbar-nav ms-auto">
+                {% if 'user_id' in session %}
+                    <a class="nav-link" href="{{ url_for('auth.profile') }}">{{ gettext('profile', lang) }}</a>
+                {% else %}
+                    <a class="nav-link" href="{{ url_for('auth.login') }}">{{ gettext('login', lang) }}</a>
+                    <a class="nav-link" href="{{ url_for('auth.register') }}">{{ gettext('register', lang) }}</a>
+                {% endif %}
+                <!-- Dropdown для языка, справа (фикс: только текущий флаг) -->
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <span class="flag-icon">{{ FLAGS[lang] }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><form method="POST" action="{{ url_for('auth.set_lang') }}" class="d-inline">
+                            <input type="hidden" name="lang" value="rus">
+                            <button type="submit" class="dropdown-item">🇷🇺 RUS</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_lang') }}" class="d-inline">
+                            <input type="hidden" name="lang" value="eng">
+                            <button type="submit" class="dropdown-item">🇺🇸 ENG</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_lang') }}" class="d-inline">
+                            <input type="hidden" name="lang" value="rom">
+                            <button type="submit" class="dropdown-item">🇷🇴 ROM</button>
+                        </form></li>
+                    </ul>
+                </div>
+                <!-- Новый dropdown для валюты, рядом с языком -->
+                {% set currency = session.get('currency', 'usd') %}
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <span class="currency-icon">{{ get_symbol(currency) }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><form method="POST" action="{{ url_for('auth.set_currency') }}" class="d-inline currency-form">
+                            <input type="hidden" name="currency" value="eur">
+                            <button type="submit" class="dropdown-item">€ EUR</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_currency') }}" class="d-inline currency-form">
+                            <input type="hidden" name="currency" value="uah">
+                            <button type="submit" class="dropdown-item">₴ UAH</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_currency') }}" class="d-inline currency-form">
+                            <input type="hidden" name="currency" value="rub">
+                            <button type="submit" class="dropdown-item">₽ RUB</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_currency') }}" class="d-inline currency-form">
+                            <input type="hidden" name="currency" value="usd">
+                            <button type="submit" class="dropdown-item">$ USD</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_currency') }}" class="d-inline currency-form">
+                            <input type="hidden" name="currency" value="mdl">
+                            <button type="submit" class="dropdown-item">L MDL</button>
+                        </form></li>
+                        <li><form method="POST" action="{{ url_for('auth.set_currency') }}" class="d-inline currency-form">
+                            <input type="hidden" name="currency" value="ron">
+                            <button type="submit" class="dropdown-item">lei RON</button>
+                        </form></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Toast container для уведомлений (середина сверху) -->
+    <div id="toast-container" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    {% set is_error = message.startswith(gettext('flash_error_prefix', lang)) %}
+                    <div class="toast align-items-center text-white bg-{{ 'danger' if is_error else 'success' }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Авто-показ и скрытие toast через 3 секунды
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function(toast) {
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+                setTimeout(function() {
+                    bsToast.hide();
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>

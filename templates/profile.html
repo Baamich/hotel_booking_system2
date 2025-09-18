@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('profile_title', lang) }}{% endblock %}
+
+{% block content %}
+<h2>{{ gettext('profile_title', lang) }}, {{ user.user_name }}</h2>
+<p>{{ gettext('profile_email', lang) }}: {{ user.user_email }}</p>
+
+<h3>{{ gettext('bookings_history', lang) }}</h3>
+{% if bookings %}
+    <ul class="list-group">
+        {% for booking in bookings %}
+            <li class="list-group-item">
+                {{ gettext('booking_item', lang).format(hotel_id=booking.hotel_id, date_from=booking.date_from, date_to=booking.date_to) }} 
+                <a href="{{ url_for('booking.cancel_booking', booking_id=booking._id) }}" class="btn btn-sm btn-danger float-end">{{ gettext('cancel_btn', lang) }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>{{ gettext('no_bookings', lang) }}</p>
+{% endif %}
+
+<a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger mt-3">{{ gettext('logout', lang) }}</a>
+{% endblock %}
