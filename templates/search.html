@@ -3,9 +3,47 @@
 {% block title %}{{ gettext('search_title', lang) }}{% endblock %}
 
 {% block content %}
-<h2>{{ gettext('search_title', lang) }}</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="dropdown">
+        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ gettext('search_btn', lang) }}
+        </button>
+        <div class="dropdown-menu p-3" aria-labelledby="filterDropdown" style="min-width: 300px;">
+            <form id="filter-form">
+                <div class="mb-2">
+                    <label for="city" class="form-label">{{ gettext('search_city', lang) }}</label>
+                    <select name="city" id="city" class="form-select">
+                        <option value="all">{{ gettext('all_categories', lang) }}</option>
+                        {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label for="min_price" id="min_price_label" class="form-label">{{ gettext('min_price', lang) }} ({{ currency_symbol }})</label>
+                    <input type="number" name="min_price" id="min_price" class="form-control" min="0" step="0.01" value="0">
+                </div>
+                <div class="mb-2">
+                    <label for="max_price" id="max_price_label" class="form-label">{{ gettext('max_price', lang) }} ({{ currency_symbol }})</label>
+                    <input type="number" name="max_price" id="max_price" class="form-control" min="0" step="0.01" value="999999">
+                </div>
+                <div class="mb-2">
+                    <label for="category" class="form-label">{{ gettext('category', lang) }}</label>
+                    <select name="category" id="category" class="form-select">
+                        <option value="all">{{ gettext('all_categories', lang) }}</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}">{{ cat }} {{ gettext('stars', lang) }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">{{ gettext('search_btn', lang) }}</button>
+                <button type="button" id="reset-filter" class="btn btn-secondary w-100 mt-2">{{ gettext('reset_filter', lang) }}</button>
+            </form>
+        </div>
+    </div>
+</div>
 
-<div class="row" id="hotels-row">
+<div class="row" id="hotels-row" data-lang="{{ lang }}" data-currency-symbol="{{ currency_symbol }}" data-currency="{{ session.get('currency', 'usd') }}">
     {% for hotel in hotels %}
         <div class="col-md-4 mb-3">
             <div class="card">
@@ -20,97 +58,5 @@
     {% endfor %}
 </div>
 
-<script>
-    // Функция для показа toast
-    function showToast(message, isError = false) {
-        const toastContainer = document.getElementById('toast-container');
-        const toastDiv = document.createElement('div');
-        toastDiv.className = `toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0`;
-        toastDiv.setAttribute('role', 'alert');
-        toastDiv.setAttribute('aria-live', 'assertive');
-        toastDiv.setAttribute('aria-atomic', 'true');
-        toastDiv.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-        toastContainer.appendChild(toastDiv);
-        const bsToast = new bootstrap.Toast(toastDiv);
-        bsToast.show();
-        setTimeout(() => bsToast.hide(), 3000);
-    }
-
-    // AJAX для смены валюты
-    document.addEventListener('DOMContentLoaded', function() {
-        const currencyForms = document.querySelectorAll('.currency-form');
-        const currencySymbols = {
-            'eur': '€',
-            'uah': '₴',
-            'rub': '₽',
-            'usd': '$',
-            'mdl': 'L',
-            'ron': 'lei'
-        };
-        currencyForms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const currency = this.querySelector('input[name="currency"]').value;
-                const symbol = currencySymbols[currency];
-
-                // Установить валюту
-                fetch('/auth/set_currency', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'application/json'
-                    },
-                    body: 'currency=' + encodeURIComponent(currency)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Обновить символ валюты в кнопке
-                        document.querySelector('.currency-icon').innerHTML = symbol;
-                        // Обновить цены для каждой карточки
-                        const priceEls = document.querySelectorAll('.price-text');
-                        priceEls.forEach(priceEl => {
-                            const priceUsd = parseFloat(priceEl.getAttribute('data-price-usd'));
-                            fetch('/search/api/convert_price', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'Accept': 'application/json'
-                                },
-                                body: `price_usd=${priceUsd}&currency=${encodeURIComponent(currency)}`
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.error) {
-                                    showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
-                                    return;
-                                }
-                                const parts = priceEl.innerHTML.split(' | ');
-                                if (parts.length === 3) {
-                                    const currentPricePart = parts[2];
-                                    const perNight = currentPricePart.replace(/^\d+\.?\d*\s*\S+\s*/, '');
-                                    parts[2] = `${data.display_price} ${data.symbol} ${perNight}`;
-                                    priceEl.innerHTML = parts.join(' | ');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Fetch convert_price error:', error);
-                                showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
-                            });
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Fetch set_currency error:', error);
-                    showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
-                });
-            });
-        });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
 {% endblock %}

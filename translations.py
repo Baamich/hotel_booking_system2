@@ -44,10 +44,11 @@ TRANSLATIONS = {
         'add_review': 'Оставить отзыв',
         'back': 'Назад',
         'show_all_reviews': 'Показать все отзывы',
-        'flash_error_prefix': 'Ошибка! ',  # Новое для ошибок в toast
+        'flash_error_prefix': 'Ошибка! ',
         'welcome': 'Добро пожаловать в систему бронирования отелей!',
         'flash_success': 'Успех!',
         'flash_error': 'Ошибка!',
+        'reset_filter': 'Сбросить фильтры'  # Добавлено
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -93,10 +94,11 @@ TRANSLATIONS = {
         'add_review': 'Leave a review',
         'back': 'Back',
         'show_all_reviews': 'Show all reviews',
-        'flash_error_prefix': 'Error! ',  # Новое
+        'flash_error_prefix': 'Error! ',
         'welcome': 'Welcome to the hotel booking system!',
         'flash_success': 'Success!',
         'flash_error': 'Error!',
+        'reset_filter': 'Reset Filters'  # Добавлено
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -142,10 +144,11 @@ TRANSLATIONS = {
         'add_review': 'Lăsați o recenzie',
         'back': 'Înapoi',
         'show_all_reviews': 'Arată toate recenziile',
-        'flash_error_prefix': 'Eroare! ',  # Новое
+        'flash_error_prefix': 'Eroare! ',
         'welcome': 'Bine ați venit în sistemul de rezervare hoteluri!',
         'flash_success': 'Succes!',
         'flash_error': 'Eroare!',
+        'reset_filter': 'Resetați filtrele'  # Добавлено
     }
 }
 

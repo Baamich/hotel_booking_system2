@@ -6,7 +6,7 @@ from models.hotel import Hotel
 import os
 from werkzeug.utils import secure_filename
 from pymongo.errors import PyMongoError
-import logging  # Для логирования ошибок
+import logging
 
 # Настройка логирования
 logging.basicConfig(level=logging.ERROR)
@@ -26,28 +26,72 @@ def search_hotels():
                 hotel['display_price'] = 0  # Fallback
             else:
                 hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
+        # Уникальные города и категории для фильтров
+        cities = sorted(set(hotel['city'] for hotel in hotels))
+        categories = sorted(set(hotel['category'] for hotel in hotels))
         currency_symbol = get_symbol(currency)
-        return render_template('search.html', hotels=hotels, lang=lang, currency_symbol=currency_symbol)
+        return render_template('search.html', hotels=hotels, lang=lang, currency_symbol=currency_symbol, cities=cities, categories=categories)
     except PyMongoError:
         flash(gettext('flash_error_prefix', lang) + 'Ошибка соединения с БД!')
-        return render_template('search.html', hotels=[], lang=lang, currency_symbol=get_symbol(currency))
+        return render_template('search.html', hotels=[], lang=lang, currency_symbol=get_symbol(currency), cities=[], categories=[])
 
 @search_bp.route('/api/hotels', methods=['GET'])
 def api_search_hotels():
     currency = request.args.get('currency', session.get('currency', 'usd'))
+    city = request.args.get('city')
+    min_price = request.args.get('min_price', '0')
+    max_price = request.args.get('max_price', '999999')
+    category = request.args.get('category')
     try:
         hotels = Hotel.get_all_hotels()
-        # Конвертируем цены из USD
-        for hotel in hotels:
+        # Фильтрация
+        filtered_hotels = hotels
+        if city and city != 'all':
+            filtered_hotels = [h for h in filtered_hotels if h['city'] == city]
+        if min_price:
+            try:
+                min_price = float(min_price)
+                if min_price < 0:
+                    logging.warning(f"Negative min_price: {min_price}")
+                    return jsonify({'error': 'Минимальная цена не может быть отрицательной'})
+                min_price_usd = min_price / convert_price(1, 'usd', currency)
+                filtered_hotels = [h for h in filtered_hotels if h.get('price_usd', 0) >= min_price_usd]
+            except (ValueError, ZeroDivisionError) as e:
+                logging.error(f"Invalid min_price: {min_price}, error: {str(e)}")
+                return jsonify({'error': 'Неверный формат минимальной цены'})
+        if max_price:
+            try:
+                max_price = float(max_price)
+                if max_price < 0:
+                    logging.warning(f"Negative max_price: {max_price}")
+                    return jsonify({'error': 'Максимальная цена не может быть отрицательной'})
+                max_price_usd = max_price / convert_price(1, 'usd', currency)
+                filtered_hotels = [h for h in filtered_hotels if h.get('price_usd', 0) <= max_price_usd]
+            except (ValueError, ZeroDivisionError) as e:
+                logging.error(f"Invalid max_price: {max_price}, error: {str(e)}")
+                return jsonify({'error': 'Неверный формат максимальной цены'})
+        if category and category != 'all':
+            try:
+                category = int(category)
+                if category < 1 or category > 5:
+                    logging.warning(f"Invalid category: {category}")
+                    return jsonify({'error': 'Неверная категория (1–5)'})
+                filtered_hotels = [h for h in filtered_hotels if h['category'] == category]
+            except ValueError:
+                logging.error(f"Invalid category: {category}")
+                return jsonify({'error': 'Неверный формат категории'})
+        # Конвертируем цены и ObjectId в строку
+        for hotel in filtered_hotels:
             if 'price_usd' not in hotel:
                 logging.error(f"Hotel {hotel.get('name')} missing price_usd")
-                hotel['display_price'] = 0  # Fallback
+                hotel['display_price'] = 0
             else:
                 hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
-        return jsonify(hotels)
+            hotel['_id'] = str(hotel['_id'])  # Преобразуем ObjectId в строку
+        return jsonify(filtered_hotels)
     except Exception as e:
         logging.error(f"Error in api_search_hotels: {str(e)}")
-        return jsonify({'error': 'Server error'})
+        return jsonify({'error': 'Ошибка сервера'})
 
 @search_bp.route('/api/convert_price', methods=['POST'])
 def convert_price_api():
@@ -60,7 +104,7 @@ def convert_price_api():
         return jsonify({'display_price': display_price, 'symbol': symbol})
     except Exception as e:
         logging.error(f"Error in convert_price_api: {str(e)}")
-        return jsonify({'error': 'Conversion error'})
+        return jsonify({'error': 'Ошибка конвертации'})
 
 @search_bp.route('/hotel/<hotel_id>')
 def hotel_detail(hotel_id):
