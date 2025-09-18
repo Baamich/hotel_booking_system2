@@ -5,7 +5,11 @@ from bson import ObjectId
 from models.hotel import Hotel
 import os
 from werkzeug.utils import secure_filename
-from pymongo.errors import PyMongoError  # Новый импорт для except
+from pymongo.errors import PyMongoError
+import logging  # Для логирования ошибок
+
+# Настройка логирования
+logging.basicConfig(level=logging.ERROR)
 
 search_bp = Blueprint('search', __name__, template_folder='templates')
 
@@ -17,7 +21,11 @@ def search_hotels():
         hotels = Hotel.get_all_hotels()
         # Конвертируем цены из USD
         for hotel in hotels:
-            hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
+            if 'price_usd' not in hotel:
+                logging.error(f"Hotel {hotel.get('name')} missing price_usd")
+                hotel['display_price'] = 0  # Fallback
+            else:
+                hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
         currency_symbol = get_symbol(currency)
         return render_template('search.html', hotels=hotels, lang=lang, currency_symbol=currency_symbol)
     except PyMongoError:
@@ -31,12 +39,29 @@ def api_search_hotels():
         hotels = Hotel.get_all_hotels()
         # Конвертируем цены из USD
         for hotel in hotels:
-            hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
+            if 'price_usd' not in hotel:
+                logging.error(f"Hotel {hotel.get('name')} missing price_usd")
+                hotel['display_price'] = 0  # Fallback
+            else:
+                hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
         return jsonify(hotels)
-    except PyMongoError:
-        return jsonify({'error': 'Connection error'})
+    except Exception as e:
+        logging.error(f"Error in api_search_hotels: {str(e)}")
+        return jsonify({'error': 'Server error'})
 
-# Роут для деталей отеля
+@search_bp.route('/api/convert_price', methods=['POST'])
+def convert_price_api():
+    try:
+        data = request.form
+        price_usd = float(data.get('price_usd', 0))
+        currency = data.get('currency', 'usd')
+        display_price = convert_price(price_usd, 'usd', currency)
+        symbol = get_symbol(currency)
+        return jsonify({'display_price': display_price, 'symbol': symbol})
+    except Exception as e:
+        logging.error(f"Error in convert_price_api: {str(e)}")
+        return jsonify({'error': 'Conversion error'})
+
 @search_bp.route('/hotel/<hotel_id>')
 def hotel_detail(hotel_id):
     lang = session.get('lang', 'eng')
@@ -45,15 +70,17 @@ def hotel_detail(hotel_id):
         hotel = Hotel.get_hotel_by_id(hotel_id)
         if not hotel:
             abort(404)
-        # Конвертируем цену из USD
-        hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
+        if 'price_usd' not in hotel:
+            logging.error(f"Hotel {hotel.get('name')} missing price_usd")
+            hotel['display_price'] = 0
+        else:
+            hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
         currency_symbol = get_symbol(currency)
         return render_template('details.html', hotel=hotel, lang=lang, currency_symbol=currency_symbol)
     except PyMongoError:
         flash(gettext('flash_error_prefix', lang) + 'Ошибка соединения с БД!')
         return redirect(url_for('search.search_hotels'))
 
-# Роут для добавления отзыва
 @search_bp.route('/add_review/<hotel_id>', methods=['POST'])
 def add_review(hotel_id):
     if 'user_id' not in session:

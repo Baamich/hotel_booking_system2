@@ -8,7 +8,7 @@
         <h2>{{ hotel.name }}</h2>
         <p><strong>{{ gettext('description', lang) }}:</strong> {{ hotel.description }}</p>
         <hr class="border-dark my-4">  <!-- Чёрная полоска -->
-        <p class="price-per-night"><strong>{{ gettext('per_night', lang) }} {{ hotel.display_price }} {{ currency_symbol }}</strong></p>
+        <p class="price-per-night" data-price-usd="{{ hotel.price_usd }}"><strong>{{ gettext('per_night', lang) }} {{ hotel.display_price }} {{ currency_symbol }}</strong></p>
         
         <h4>{{ gettext('photos', lang) }}</h4>
         <div class="row">
@@ -124,7 +124,27 @@
         }
     }
 
-    // AJAX для смены валюты в деталях (без релоада)
+    // Функция для показа toast
+    function showToast(message, isError = false) {
+        const toastContainer = document.getElementById('toast-container');
+        const toastDiv = document.createElement('div');
+        toastDiv.className = `toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0`;
+        toastDiv.setAttribute('role', 'alert');
+        toastDiv.setAttribute('aria-live', 'assertive');
+        toastDiv.setAttribute('aria-atomic', 'true');
+        toastDiv.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        toastContainer.appendChild(toastDiv);
+        const bsToast = new bootstrap.Toast(toastDiv);
+        bsToast.show();
+        setTimeout(() => bsToast.hide(), 3000);
+    }
+
+    // AJAX для смены валюты в деталях
     document.addEventListener('DOMContentLoaded', function() {
         const currencyForms = document.querySelectorAll('.currency-form');
         const currencySymbols = {
@@ -140,6 +160,7 @@
                 e.preventDefault();
                 const currency = this.querySelector('input[name="currency"]').value;
                 const symbol = currencySymbols[currency];
+                const priceUsd = parseFloat(document.querySelector('.price-per-night').getAttribute('data-price-usd'));
 
                 fetch('/auth/set_currency', {
                     method: 'POST',
@@ -152,21 +173,36 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        fetch(`/search/api/hotels?currency=${currency}`)
+                        fetch('/search/api/convert_price', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Accept': 'application/json'
+                            },
+                            body: `price_usd=${priceUsd}&currency=${encodeURIComponent(currency)}`
+                        })
                         .then(response => response.json())
-                        .then(hotels => {
-                            const currentHotelId = '{{ hotel._id }}';
-                            const currentHotel = hotels.find(h => h._id == currentHotelId);
-                            if (currentHotel) {
-                                const priceEl = document.querySelector('.price-per-night');
-                                if (priceEl) {
-                                    const currentText = priceEl.innerHTML;
-                                    const perNightPrefix = currentText.match(/^(.*?) \d+\.?\d* \S+ /)[1];  
-                                    priceEl.innerHTML = `${perNightPrefix} ${currentHotel.display_price} ${symbol}`;
-                                }
+                        .then(data => {
+                            if (data.error) {
+                                showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
+                                return;
                             }
+                            const priceEl = document.querySelector('.price-per-night');
+                            if (priceEl) {
+                                const currentText = priceEl.innerHTML;
+                                const perNightPrefix = currentText.match(/^(.*?) \d+\.?\d* \S+/)[1];
+                                priceEl.innerHTML = `${perNightPrefix} ${data.display_price} ${data.symbol}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch convert_price error:', error);
+                            showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
                         });
                     }
+                })
+                .catch(error => {
+                    console.error('Fetch set_currency error:', error);
+                    showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
                 });
             });
         });

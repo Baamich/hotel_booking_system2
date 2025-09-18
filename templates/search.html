@@ -12,7 +12,7 @@
                 <img src="https://via.placeholder.com/300x200?text={{ hotel.name }}" class="card-img-top" alt="{{ hotel.name }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ hotel.name }}</h5>
-                    <p class="card-text price-text">{{ hotel.city }} | {{ hotel.category }} {{ gettext('stars', lang) }} | {{ hotel.display_price }} {{ currency_symbol }} {{ gettext('per_night', lang) }}</p>
+                    <p class="card-text price-text" data-price-usd="{{ hotel.price_usd }}">{{ hotel.city }} | {{ hotel.category }} {{ gettext('stars', lang) }} | {{ hotel.display_price }} {{ currency_symbol }} {{ gettext('per_night', lang) }}</p>
                     <a href="{{ url_for('search.hotel_detail', hotel_id=hotel._id) }}" class="btn btn-primary">{{ gettext('details', lang) }}</a>
                 </div>
             </div>
@@ -21,7 +21,27 @@
 </div>
 
 <script>
-    // AJAX для смены валюты в реальном времени (без релоада, мгновенно)
+    // Функция для показа toast
+    function showToast(message, isError = false) {
+        const toastContainer = document.getElementById('toast-container');
+        const toastDiv = document.createElement('div');
+        toastDiv.className = `toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0`;
+        toastDiv.setAttribute('role', 'alert');
+        toastDiv.setAttribute('aria-live', 'assertive');
+        toastDiv.setAttribute('aria-atomic', 'true');
+        toastDiv.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        toastContainer.appendChild(toastDiv);
+        const bsToast = new bootstrap.Toast(toastDiv);
+        bsToast.show();
+        setTimeout(() => bsToast.hide(), 3000);
+    }
+
+    // AJAX для смены валюты
     document.addEventListener('DOMContentLoaded', function() {
         const currencyForms = document.querySelectorAll('.currency-form');
         const currencySymbols = {
@@ -38,7 +58,7 @@
                 const currency = this.querySelector('input[name="currency"]').value;
                 const symbol = currencySymbols[currency];
 
-                // AJAX POST на set_currency
+                // Установить валюту
                 fetch('/auth/set_currency', {
                     method: 'POST',
                     headers: {
@@ -50,26 +70,42 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Fetch обновлённых отелей
-                        fetch(`/search/api/hotels?currency=${currency}`)
-                        .then(response => response.json())
-                        .then(hotels => {
-                            // Обновляем цены в карточках
-                            const priceEls = document.querySelectorAll('.price-text');
-                            priceEls.forEach((priceEl, index) => {
-                                if (hotels[index]) {
-                                    const parts = priceEl.innerHTML.split(' | ');
-                                    if (parts.length === 3) {
-                                        const currentPricePart = parts[2];
-                                        // Фикс: extract per_night, убрать цену и символ
-                                        const perNight = currentPricePart.replace(/^\d+\.?\d*\s+\S+\s+/, '');
-                                        parts[2] = `${hotels[index].display_price} ${symbol} ${perNight}`;
-                                        priceEl.innerHTML = parts.join(' | ');
-                                    }
+                        // Обновить цены для каждой карточки
+                        const priceEls = document.querySelectorAll('.price-text');
+                        priceEls.forEach(priceEl => {
+                            const priceUsd = parseFloat(priceEl.getAttribute('data-price-usd'));
+                            fetch('/search/api/convert_price', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Accept': 'application/json'
+                                },
+                                body: `price_usd=${priceUsd}&currency=${encodeURIComponent(currency)}`
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error) {
+                                    showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
+                                    return;
                                 }
+                                const parts = priceEl.innerHTML.split(' | ');
+                                if (parts.length === 3) {
+                                    const currentPricePart = parts[2];
+                                    const perNight = currentPricePart.replace(/^\d+\.?\d*\s*\S+\s*/, '');
+                                    parts[2] = `${data.display_price} ${data.symbol} ${perNight}`;
+                                    priceEl.innerHTML = parts.join(' | ');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fetch convert_price error:', error);
+                                showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
                             });
                         });
                     }
+                })
+                .catch(error => {
+                    console.error('Fetch set_currency error:', error);
+                    showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
                 });
             });
         });

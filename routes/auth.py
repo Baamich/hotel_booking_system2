@@ -100,15 +100,15 @@ def set_lang():
     lang = request.form.get('lang')
     if lang in ['rus', 'eng', 'rom']:
         session['lang'] = lang
-    return redirect(request.referrer or url_for('search.search_hotels'))
+    return jsonify({'success': True})  # JSON для AJAX
 
-# Роут для установки валюты (теперь всегда redirect, как set_lang)
+# Роут для установки валюты (фикс: JSON вместо редиректа)
 @auth_bp.route('/set_currency', methods=['POST'])
 def set_currency():
     cur = request.form.get('currency')
     if cur in CURRENCIES:
         session['currency'] = cur
-    return redirect(request.referrer or url_for('search.search_hotels'))
+    return jsonify({'success': True})
 
 # Роут для проверки email (AJAX)
 @auth_bp.route('/check_email', methods=['POST'])
