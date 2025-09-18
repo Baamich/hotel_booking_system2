@@ -3,12 +3,12 @@ from translations import gettext
 from currencies import convert_price, get_symbol
 from bson import ObjectId
 from models.hotel import Hotel
+from models.user import User
 import os
 from werkzeug.utils import secure_filename
 from pymongo.errors import PyMongoError
 import logging
 
-# Настройка логирования
 logging.basicConfig(level=logging.ERROR)
 
 search_bp = Blueprint('search', __name__, template_folder='templates')
@@ -19,14 +19,12 @@ def search_hotels():
     currency = session.get('currency', 'usd')
     try:
         hotels = Hotel.get_all_hotels()
-        # Конвертируем цены из USD
         for hotel in hotels:
             if 'price_usd' not in hotel:
                 logging.error(f"Hotel {hotel.get('name')} missing price_usd")
-                hotel['display_price'] = 0  # Fallback
+                hotel['display_price'] = 0
             else:
                 hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
-        # Уникальные города и категории для фильтров
         cities = sorted(set(hotel['city'] for hotel in hotels))
         categories = sorted(set(hotel['category'] for hotel in hotels))
         currency_symbol = get_symbol(currency)
@@ -44,7 +42,6 @@ def api_search_hotels():
     category = request.args.get('category')
     try:
         hotels = Hotel.get_all_hotels()
-        # Фильтрация
         filtered_hotels = hotels
         if city and city != 'all':
             filtered_hotels = [h for h in filtered_hotels if h['city'] == city]
@@ -80,14 +77,13 @@ def api_search_hotels():
             except ValueError:
                 logging.error(f"Invalid category: {category}")
                 return jsonify({'error': 'Неверный формат категории'})
-        # Конвертируем цены и ObjectId в строку
         for hotel in filtered_hotels:
             if 'price_usd' not in hotel:
                 logging.error(f"Hotel {hotel.get('name')} missing price_usd")
                 hotel['display_price'] = 0
             else:
                 hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
-            hotel['_id'] = str(hotel['_id'])  # Преобразуем ObjectId в строку
+            hotel['_id'] = str(hotel['_id'])
         return jsonify(filtered_hotels)
     except Exception as e:
         logging.error(f"Error in api_search_hotels: {str(e)}")
@@ -119,6 +115,8 @@ def hotel_detail(hotel_id):
             hotel['display_price'] = 0
         else:
             hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
+        if 'user_id' in session:
+            User.add_viewed_hotel(session['user_id'], hotel_id)
         currency_symbol = get_symbol(currency)
         return render_template('details.html', hotel=hotel, lang=lang, currency_symbol=currency_symbol)
     except PyMongoError:

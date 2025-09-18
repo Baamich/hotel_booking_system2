@@ -1,4 +1,3 @@
-# Простой gettext-подобный для 3 языков
 TRANSLATIONS = {
     'rus': {
         'title': 'Система бронирования отелей',
@@ -48,7 +47,12 @@ TRANSLATIONS = {
         'welcome': 'Добро пожаловать в систему бронирования отелей!',
         'flash_success': 'Успех!',
         'flash_error': 'Ошибка!',
-        'reset_filter': 'Сбросить фильтры'  # Добавлено
+        'reset_filter': 'Сбросить фильтры',
+        'history': 'История просмотров',
+        'no_viewed_hotels': 'Нет просмотренных отелей.',
+        'select_all': 'Выбрать все',  # Добавлено
+        'clear_selected': 'Очистить выбранное',  # Добавлено
+        'select': 'Выбрать'  # Добавлено
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -98,7 +102,12 @@ TRANSLATIONS = {
         'welcome': 'Welcome to the hotel booking system!',
         'flash_success': 'Success!',
         'flash_error': 'Error!',
-        'reset_filter': 'Reset Filters'  # Добавлено
+        'reset_filter': 'Reset Filters',
+        'history': 'Viewing History',
+        'no_viewed_hotels': 'No viewed hotels.',
+        'select_all': 'Select All',  # Добавлено
+        'clear_selected': 'Clear Selected',  # Добавлено
+        'select': 'Select'  # Добавлено
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -148,11 +157,16 @@ TRANSLATIONS = {
         'welcome': 'Bine ați venit în sistemul de rezervare hoteluri!',
         'flash_success': 'Succes!',
         'flash_error': 'Eroare!',
-        'reset_filter': 'Resetați filtrele'  # Добавлено
+        'reset_filter': 'Resetați filtrele',
+        'history': 'Istoric vizualizări',
+        'no_viewed_hotels': 'Nu există hoteluri vizualizate.',
+        'select_all': 'Selectează tot',  # Добавлено
+        'clear_selected': 'Șterge selectate',  # Добавлено
+        'select': 'Selectează'  # Добавлено
     }
 }
 
 def gettext(key, lang=None):
     if lang is None:
-        lang = 'eng'  # По умолчанию английский
-    return TRANSLATIONS.get(lang, TRANSLATIONS['eng']).get(key, key)  # Fallback на eng или ключ
+        lang = 'eng'
+    return TRANSLATIONS.get(lang, TRANSLATIONS['eng']).get(key, key)

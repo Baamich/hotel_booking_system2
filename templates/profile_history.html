@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('history', lang) }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>{{ gettext('history', lang) }}</h2>
+        <form id="clear-history-form" action="{{ url_for('auth.clear_history') }}" method="POST">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="form-check">
+                    <input type="checkbox" id="select-all" class="form-check-input">
+                    <label for="select-all" class="form-check-label">{{ gettext('select_all', lang) }}</label>
+                </div>
+                <button type="submit" class="btn btn-danger">{{ gettext('clear_selected', lang) }}</button>
+            </div>
+            {% if viewed_hotels %}
+                <div class="row">
+                    {% for hotel in viewed_hotels %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <img src="https://via.placeholder.com/300x200?text={{ hotel.name }}" class="card-img-top" alt="{{ hotel.name }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ hotel.name }}</h5>
+                                    <p class="card-text">{{ hotel.city }} | {{ hotel.category }} {{ gettext('stars', lang) }} | {{ hotel.display_price }} {{ currency_symbol }} {{ gettext('per_night', lang) }}</p>
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" name="hotel_ids" value="{{ hotel._id }}" class="form-check-input hotel-checkbox">
+                                        <label class="form-check-label">{{ gettext('select', lang) }}</label>
+                                    </div>
+                                    <a href="{{ url_for('search.hotel_detail', hotel_id=hotel._id) }}" class="btn btn-primary">{{ gettext('details', lang) }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>{{ gettext('no_viewed_hotels', lang) }}</p>
+            {% endif %}
+        </form>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

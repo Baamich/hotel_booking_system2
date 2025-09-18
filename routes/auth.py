@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from models.user import User
+from models.hotel import Hotel
 from config import Config
 from translations import gettext
-from currencies import CURRENCIES
-import re  # Для regex валидации пароля
+from currencies import CURRENCIES, convert_price, get_symbol
+import re
 
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
 
@@ -32,24 +33,20 @@ def register():
         confirm_password = request.form.get('confirm_password', '')
         name = request.form['name']
         
-        # Проверка повторения пароля
         if password != confirm_password:
             flash(gettext('flash_error_prefix', lang) + 'Пароли не совпадают!')
             return render_template('register.html', lang=lang)
         
-        # Проверяем, существует ли пользователь
         existing_user = User.get_user_by_email(email)
         if existing_user:
             flash(gettext('flash_error_prefix', lang) + 'Email уже зарегистрирован!')
             return redirect(url_for('auth.register'))
         
-        # Проверка пароля
         is_valid, error_msg = is_valid_password(password, email)
         if not is_valid:
             flash(gettext('flash_error_prefix', lang) + error_msg)
             return render_template('register.html', lang=lang)
         
-        # Создаём пользователя
         user_id = User.create_user(email, password, name)
         flash(gettext('flash_success', lang) + 'Регистрация успешна! Войдите в аккаунт.')
         return redirect(url_for('auth.login'))
@@ -90,19 +87,50 @@ def profile():
         return redirect(url_for('auth.login'))
     
     user_id = session['user_id']
-    bookings = User.get_user_bookings(user_id)  # История бронирований (пока пустая)
+    bookings = User.get_user_bookings(user_id)
     
     return render_template('profile.html', user=session, bookings=bookings, lang=lang)
 
-# Роут для установки языка
+@auth_bp.route('/profile/history')
+def profile_history():
+    lang = session.get('lang', 'eng')
+    currency = session.get('currency', 'usd')
+    if 'user_id' not in session:
+        flash(gettext('flash_error_prefix', lang) + 'Войдите в аккаунт!')
+        return redirect(url_for('auth.login'))
+    
+    user_id = session['user_id']
+    viewed_hotels = User.get_viewed_hotels(user_id)  # Отсортировано по viewed_at
+    viewed_hotels = [h for h in viewed_hotels if h]
+    for hotel in viewed_hotels:
+        if 'price_usd' not in hotel:
+            hotel['display_price'] = 0
+        else:
+            hotel['display_price'] = convert_price(hotel['price_usd'], 'usd', currency)
+    currency_symbol = get_symbol(currency)
+    
+    return render_template('profile_history.html', viewed_hotels=viewed_hotels, lang=lang, currency_symbol=currency_symbol)
+
+@auth_bp.route('/profile/history/clear', methods=['POST'])
+def clear_history():
+    lang = session.get('lang', 'eng')
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': gettext('flash_error_prefix', lang) + 'Войдите в аккаунт!'})
+    
+    hotel_ids = request.form.getlist('hotel_ids')
+    if not hotel_ids:
+        return jsonify({'success': False, 'error': gettext('flash_error_prefix', lang) + 'Выберите хотя бы один отель для удаления!'})
+    
+    User.clear_viewed_hotels(session['user_id'], hotel_ids)
+    return jsonify({'success': True})
+
 @auth_bp.route('/set_lang', methods=['POST'])
 def set_lang():
     lang = request.form.get('lang')
     if lang in ['rus', 'eng', 'rom']:
         session['lang'] = lang
-    return jsonify({'success': True})  # JSON для AJAX
+    return jsonify({'success': True})
 
-# Роут для установки валюты (фикс: JSON вместо редиректа)
 @auth_bp.route('/set_currency', methods=['POST'])
 def set_currency():
     cur = request.form.get('currency')
@@ -110,7 +138,6 @@ def set_currency():
         session['currency'] = cur
     return jsonify({'success': True})
 
-# Роут для проверки email (AJAX)
 @auth_bp.route('/check_email', methods=['POST'])
 def check_email():
     email = request.form.get('email')
