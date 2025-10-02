@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('support_chats_title', lang) }}{% endblock %}
+
+{% block content %}
+<h2>{{ gettext('support_chats_title', lang) }}</h2>
+<a href="{{ url_for('support.new_chat') }}" class="btn btn-primary mb-3">{{ gettext('create_chat_btn', lang) }}</a>
+<a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary mb-3">{{ gettext('back', lang) }}</a>
+
+{% if chats %}
+    <ul class="list-group">
+        {% for chat in chats %}
+            <li class="list-group-item">
+                <a href="{{ url_for('support.chat', chat_id=chat._id) }}">Чат_{{ chat._id }}</a>
+                <small class="text-muted">{{ chat.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>{{ gettext('no_chats', lang) }}</p>
+{% endif %}
+{% endblock %}

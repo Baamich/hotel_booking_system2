@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('new_chat_title', lang) }}{% endblock %}
+
+{% block content %}
+<h2>{{ gettext('new_chat_title', lang) }}</h2>
+<form method="POST" action="{{ url_for('support.new_chat') }}">
+    <button type="submit" class="btn btn-primary">{{ gettext('create_chat_btn', lang) }}</button>
+</form>
+{% endblock %}

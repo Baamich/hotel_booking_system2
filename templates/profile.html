@@ -20,5 +20,6 @@
     <p>{{ gettext('no_bookings', lang) }}</p>
 {% endif %}
 
+<a href="{{ url_for('support.chats') }}" class="btn btn-outline-primary mt-3">{{ gettext('support_btn', lang) }}</a>
 <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger mt-3">{{ gettext('logout', lang) }}</a>
 {% endblock %}

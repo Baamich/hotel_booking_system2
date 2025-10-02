@@ -1,9 +1,11 @@
 from flask import Flask, session, render_template, redirect, url_for
 from flask_cors import CORS
+from flask_socketio import SocketIO, join_room
 from config import Config
 from dotenv import load_dotenv
 from translations import gettext
 from currencies import CURRENCIES, get_symbol
+from models.user import User  # Импорт класса User
 import os
 
 # Загружаем .env
@@ -12,28 +14,40 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)  # Для CORS, если нужно
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')  # Указан async_mode и CORS
 
-# Добавляем gettext как глобальную функцию для Jinja2 (исправление ошибки)
+# Добавляем gettext как глобальную функцию для Jinja2
 app.jinja_env.globals['gettext'] = gettext
 
-# Новые globals для флагов и символов валюты
+# Новые globals для флагов, символов валюты и класса User
 app.jinja_env.globals['FLAGS'] = {'rus': '🇷🇺', 'eng': '🇺🇸', 'rom': '🇷🇴'}
 app.jinja_env.globals['get_symbol'] = get_symbol
+app.jinja_env.globals['User'] = User  # Регистрация класса User
 
-# Импорт роутов (после создания app, чтобы избежать циклических импортов)
+# Импорт роутов
 from routes.auth import auth_bp
 from routes.search import search_bp
 from routes.booking import booking_bp
+from routes.support import support_bp
 
-# Регистрация blueprint'ов (позже реализуем)
+# Регистрация blueprint'ов
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(search_bp, url_prefix='/search')
 app.register_blueprint(booking_bp, url_prefix='/booking')
+app.register_blueprint(support_bp, url_prefix='/support')
 
 @app.route('/')
 def index():
     lang = session.get('lang', 'eng')
     return redirect(url_for('search.search_hotels'))  
 
+@socketio.on('connect')
+def handle_connect():
+    pass
+
+@socketio.on('join')
+def handle_join(data):
+    join_room(data['chat_id'])
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)

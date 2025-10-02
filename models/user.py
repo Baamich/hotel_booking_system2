@@ -5,15 +5,16 @@ import datetime
 
 class User:
     @staticmethod
-    def create_user(email, password, name):
-        """Регистрация: хэшируем пароль"""
+    def create_user(email, password, name, admin=False):
+        """Регистрация: хэшируем пароль с добавлением статуса admin"""
         hashed_pw = generate_password_hash(password)
         data = {
             'email': email,
             'password': hashed_pw,
             'name': name,
-            'bookings': [],  # Список ID бронирований
-            'viewed_hotels': [],  # Список [{hotel_id, viewed_at}]
+            'admin': admin,
+            'bookings': [],
+            'viewed_hotels': [],
             'created_at': datetime.datetime.utcnow()
         }
         result = db.users.insert_one(data)
@@ -49,10 +50,10 @@ class User:
             'viewed_at': datetime.datetime.utcnow()
         }
         db.users.update_one(
-            {'_id': ObjectId(user_id), 'viewed_hotels.hotel_id': {'$ne': hotel_id}},  # Если нет
+            {'_id': ObjectId(user_id), 'viewed_hotels.hotel_id': {'$ne': hotel_id}},
             {'$push': {'viewed_hotels': new_view}}
         )
-        db.users.update_one(  # Обновить дату, если есть
+        db.users.update_one(
             {'_id': ObjectId(user_id), 'viewed_hotels.hotel_id': hotel_id},
             {'$set': {'viewed_hotels.$[elem].viewed_at': new_view['viewed_at']}},
             array_filters=[{'elem.hotel_id': hotel_id}]
@@ -63,7 +64,6 @@ class User:
         """Получить список просмотренных отелей с данными, сортировка по viewed_at"""
         user = db.users.find_one({'_id': ObjectId(user_id)})
         if user and user.get('viewed_hotels'):
-            # Обработка старого формата (список строк) и нового (список словарей)
             viewed_hotels = []
             for h in user['viewed_hotels']:
                 if isinstance(h, str):
@@ -71,11 +71,8 @@ class User:
                 elif isinstance(h, dict) and 'hotel_id' in h and 'viewed_at' in h:
                     viewed_hotels.append(h)
             
-            # Сортировка по viewed_at (новые вверху)
             viewed_hotels = sorted(viewed_hotels, key=lambda x: x['viewed_at'], reverse=True)
-            # Получаем данные отелей
             hotels = [db.hotels.find_one({'_id': ObjectId(h['hotel_id'])}) for h in viewed_hotels]
-            # Фильтруем None (удалённые отели)
             return [h for h in hotels if h]
         return []
 
@@ -92,3 +89,22 @@ class User:
                 }
             }
         )
+
+    @staticmethod
+    def set_admin_status(user_id, admin_status):
+        """Установка статуса администратора"""
+        db.users.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$set': {'admin': admin_status}}
+        )
+
+    @staticmethod
+    def get_admin_status(user_id):
+        """Получение статуса администратора"""
+        user = db.users.find_one({'_id': ObjectId(user_id)})
+        return user.get('admin', False) if user else False
+
+    @staticmethod
+    def get_user_by_id(user_id):
+        """Получение пользователя по ID"""
+        return db.users.find_one({'_id': ObjectId(user_id)})

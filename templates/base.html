@@ -15,12 +15,15 @@
             <div class="navbar-nav ms-auto">
                 {% if 'user_id' in session %}
                     <a class="nav-link" href="{{ url_for('auth.profile') }}">{{ gettext('profile', lang) }}</a>
-                    <a class="nav-link" href="{{ url_for('auth.profile_history') }}"><i class="fas fa-heart"></i></a>  <!-- Добавлено: иконка сердца для истории -->
+                    <a class="nav-link" href="{{ url_for('auth.profile_history') }}"><i class="fas fa-heart"></i></a>
+                    {% if User.get_admin_status(session['user_id']) %}
+                        <a class="nav-link" href="{{ url_for('support.admin_panel') }}">{{ gettext('admin_panel', lang) }}</a>
+                    {% endif %}
                 {% else %}
                     <a class="nav-link" href="{{ url_for('auth.login') }}">{{ gettext('login', lang) }}</a>
                     <a class="nav-link" href="{{ url_for('auth.register') }}">{{ gettext('register', lang) }}</a>
                 {% endif %}
-                <!-- Dropdown для языка, справа (фикс: только текущий флаг) -->
+                <!-- Dropdown для языка, справа (текущий флаг) -->
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <span class="flag-icon">{{ FLAGS[lang] }}</span>
@@ -40,7 +43,7 @@
                         </form></li>
                     </ul>
                 </div>
-                <!-- Новый dropdown для валюты, рядом с языком -->
+                <!-- Dropdown для валюты, рядом с языком -->
                 {% set currency = session.get('currency', 'usd') %}
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -101,6 +104,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script> <!-- Оставим для будущего -->
     <script>
         // Авто-показ и скрытие toast через 3 секунды
         document.addEventListener('DOMContentLoaded', function() {

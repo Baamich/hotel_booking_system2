@@ -50,9 +50,27 @@ TRANSLATIONS = {
         'reset_filter': 'Сбросить фильтры',
         'history': 'История просмотров',
         'no_viewed_hotels': 'Нет просмотренных отелей.',
-        'select_all': 'Выбрать все',  # Добавлено
-        'clear_selected': 'Очистить выбранное',  # Добавлено
-        'select': 'Выбрать'  # Добавлено
+        'select_all': 'Выбрать все',
+        'clear_selected': 'Очистить выбранное',
+        'select': 'Выбрать',
+        'support_btn': 'Служба поддержки',
+        'support_chats_title': 'Чаты поддержки',
+        'create_chat_btn': 'Создать новый чат',
+        'no_chats': 'Чаты не найдены',
+        'new_chat_title': 'Новый чат поддержки',
+        'chat_title': 'Чат поддержки',
+        'type_message': 'Введите ваше сообщение...',
+        'send_message_btn': 'Отправить',
+        'support_welcome': 'Добро пожаловать в нашу службу поддержки! Задавайте свои вопросы, мы постараемся ответить.',
+        'support_wait': 'Пожалуйста, подождите несколько минут, администратор подключится и ответит на ваш вопрос.',
+        'admin_panel': 'Админ панель',
+        'admin_panel_title': 'Панель администратора',
+        'new_chats': 'Новые чаты',
+        'no_new_chats': 'Новых чатов нет',
+        'admin_history_btn': 'История чатов',
+        'admin_history_title': 'История чатов',
+        'chat_history': 'История ваших чатов',
+        'admin_assigned': 'Занял чат:'
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -105,9 +123,27 @@ TRANSLATIONS = {
         'reset_filter': 'Reset Filters',
         'history': 'Viewing History',
         'no_viewed_hotels': 'No viewed hotels.',
-        'select_all': 'Select All',  # Добавлено
-        'clear_selected': 'Clear Selected',  # Добавлено
-        'select': 'Select'  # Добавлено
+        'select_all': 'Select All',
+        'clear_selected': 'Clear Selected',
+        'select': 'Select',
+        'support_btn': 'Support',
+        'support_chats_title': 'Support Chats',
+        'create_chat_btn': 'Create New Chat',
+        'no_chats': 'No chats found',
+        'new_chat_title': 'New Support Chat',
+        'chat_title': 'Support Chat',
+        'type_message': 'Type your message...',
+        'send_message_btn': 'Send',
+        'support_welcome': 'Welcome to our support service! Ask your questions, and we will try to answer.',
+        'support_wait': 'Please wait a few minutes, an administrator will join and answer your question.',
+        'admin_panel': 'Admin Panel',
+        'admin_panel_title': 'Admin Panel',
+        'new_chats': 'New Chats',
+        'no_new_chats': 'No new chats',
+        'admin_history_btn': 'Chat History',
+        'admin_history_title': 'Chat History',
+        'chat_history': 'Your chat history',
+        'admin_assigned': 'Assigned admin:'
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -160,9 +196,27 @@ TRANSLATIONS = {
         'reset_filter': 'Resetați filtrele',
         'history': 'Istoric vizualizări',
         'no_viewed_hotels': 'Nu există hoteluri vizualizate.',
-        'select_all': 'Selectează tot',  # Добавлено
-        'clear_selected': 'Șterge selectate',  # Добавлено
-        'select': 'Selectează'  # Добавлено
+        'select_all': 'Selectează tot',
+        'clear_selected': 'Șterge selectate',
+        'select': 'Selectează',
+        'support_btn': 'Suport',
+        'support_chats_title': 'Conversații suport',
+        'create_chat_btn': 'Creează conversație nouă',
+        'no_chats': 'Nicio conversație găsită',
+        'new_chat_title': 'Conversație suport nouă',
+        'chat_title': 'Conversație suport',
+        'type_message': 'Scrie mesajul tău...',
+        'send_message_btn': 'Trimite',
+        'support_welcome': 'Bine ați venit la serviciul nostru de suport! Puneți întrebările, vom încerca să răspundem.',
+        'support_wait': 'Vă rugăm să așteptați câteva minute, un administrator se va alătura și va răspunde la întrebarea dumneavoastră.',
+        'admin_panel': 'Panou administrativ',
+        'admin_panel_title': 'Panou administrativ',
+        'new_chats': 'Conversații noi',
+        'no_new_chats': 'Nicio conversație nouă',
+        'admin_history_btn': 'Istoric conversații',
+        'admin_history_title': 'Istoric conversații',
+        'chat_history': 'Istoricul conversațiilor tale',
+        'admin_assigned': 'Administrator desemnat:'
     }
 }
 

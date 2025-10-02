@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('admin_panel_title', lang) }}{% endblock %}
+
+{% block content %}
+<h2>{{ gettext('admin_panel_title', lang) }}</h2>
+<a href="{{ url_for('support.admin_history') }}" class="btn btn-secondary mb-3">{{ gettext('admin_history_btn', lang) }}</a>
+
+<div class="row">
+    <div class="col-md-4">
+        <h4>{{ gettext('new_chats', lang) }}</h4>
+        {% if new_chats %}
+            <ul class="list-group">
+                {% for chat in new_chats %}
+                    <li class="list-group-item">
+                        Чат_{{ chat._id }} (Создан: {{ chat.created_at.strftime('%Y-%m-%d %H:%M') }})
+                        <form method="POST" action="{{ url_for('support.take_chat', chat_id=chat._id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-success float-end">Взять чат</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{{ gettext('no_new_chats', lang) }}</p>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <!-- Здесь можно добавить детали выбранного чата, если нужно -->
+    </div>
+</div>
+{% endblock %}

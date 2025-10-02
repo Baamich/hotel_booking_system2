@@ -47,7 +47,7 @@ def register():
             flash(gettext('flash_error_prefix', lang) + error_msg)
             return render_template('register.html', lang=lang)
         
-        user_id = User.create_user(email, password, name)
+        user_id = User.create_user(email, password, name)  # admin=False по умолчанию
         flash(gettext('flash_success', lang) + 'Регистрация успешна! Войдите в аккаунт.')
         return redirect(url_for('auth.login'))
     
