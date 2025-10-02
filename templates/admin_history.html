@@ -6,23 +6,39 @@
 <h2>{{ gettext('admin_history_title', lang) }}</h2>
 <a href="{{ url_for('support.admin_panel') }}" class="btn btn-secondary mb-3">{{ gettext('back', lang) }}</a>
 
+<!-- Кнопка поиска (dropdown) -->
+<div class="dropdown mb-3">
+    <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        Поиск чатов
+    </button>
+    <ul class="dropdown-menu">
+        <li><input type="text" id="search-history-id" class="form-control form-control-sm mb-1" placeholder="ID чата"></li>
+        <li><input type="text" id="search-history-user" class="form-control form-control-sm mb-1" placeholder="Имя пользователя"></li>
+        <li>
+            <input type="date" id="search-history-date-from" class="form-control form-control-sm mb-1" placeholder="От даты">
+            <input type="date" id="search-history-date-to" class="form-control form-control-sm mb-1" placeholder="По дату">
+        </li>
+        <li><button class="btn btn-sm btn-primary" onclick="filterChats('history')">Применить</button></li>
+        <li><button class="btn btn-sm btn-secondary" onclick="clearSearch('history')">Очистить</button></li>
+    </ul>
+</div>
+
 <h4>{{ gettext('chat_history', lang) }}</h4>
-<ul class="list-group">
+<ul class="list-group" id="history-list">
     {% for chat in history %}
-        {% if chat.status == 'new' %}
-            <li class="list-group-item text-danger">
-                Чат_{{ chat._id }} ({{ chat.created_at.strftime('%Y-%m-%d %H:%M') }})
-            </li>
-        {% elif chat.status == 'resolved' %}
-            <li class="list-group-item text-success">
-                Чат_{{ chat._id }} ({{ chat.created_at.strftime('%Y-%m-%d %H:%M') }})
-            </li>
-        {% else %}
-            <li class="list-group-item">
-                Чат_{{ chat._id }} ({{ chat.created_at.strftime('%Y-%m-%d %H:%M') }})
-            </li>
-        {% endif %}
-        <a href="{{ url_for('support.chat', chat_id=chat._id) }}" class="btn btn-sm btn-info">Открыть</a>
+        {% set item_class = 'text-danger' if chat.status == 'new' else ('text-success' if chat.status == 'resolved' else '') %}
+        <li class="list-group-item {{ item_class }} chat-item" data-id="{{ chat._id }}" data-user="{{ chat.user_name }}" data-date="{{ chat.formatted_date[:10] }}">
+            Чат от {{ chat.user_name }} ({{ chat._id }}) - {{ chat.formatted_date }}
+            <a href="{{ url_for('support.admin_chat', chat_id=chat._id) }}" class="btn btn-sm btn-info float-end">Открыть</a>
+        </li>
     {% endfor %}
 </ul>
+
+<script src="/static/js/admin_search.js"></script>
+<script>
+    // Инициализация поиска для истории
+    document.addEventListener('DOMContentLoaded', function() {
+        filterChats('history');
+    });
+</script>
 {% endblock %}

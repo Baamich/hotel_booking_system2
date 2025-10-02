@@ -4,7 +4,14 @@
 
 {% block content %}
 <h2>{{ gettext('new_chat_title', lang) }}</h2>
+<p>{{ gettext('support_welcome', lang) }}</p>
+
 <form method="POST" action="{{ url_for('support.new_chat') }}">
-    <button type="submit" class="btn btn-primary">{{ gettext('create_chat_btn', lang) }}</button>
+    <div class="mb-3">
+        <label class="form-label">{{ gettext('type_message', lang) }}</label>
+        <textarea name="message" class="form-control" rows="4" placeholder="Опишите ваш вопрос..." required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ gettext('send_message_btn', lang) }}</button>
+    <a href="{{ url_for('support.chats') }}" class="btn btn-outline-secondary">{{ gettext('back', lang) }}</a>
 </form>
 {% endblock %}

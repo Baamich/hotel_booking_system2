@@ -4,28 +4,54 @@
 
 {% block content %}
 <h2>{{ gettext('admin_panel_title', lang) }}</h2>
-<a href="{{ url_for('support.admin_history') }}" class="btn btn-secondary mb-3">{{ gettext('admin_history_btn', lang) }}</a>
+<div class="d-flex justify-content-between mb-3">
+    <a href="{{ url_for('support.admin_history') }}" class="btn btn-secondary">{{ gettext('admin_history_btn', lang) }}</a>
+    
+    <!-- Кнопка поиска справа (dropdown) -->
+    <div class="dropdown">
+        <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Поиск чатов
+        </button>
+        <ul class="dropdown-menu">
+            <li><input type="text" id="search-id" class="form-control form-control-sm mb-1" placeholder="ID чата"></li>
+            <li><input type="text" id="search-user" class="form-control form-control-sm mb-1" placeholder="Имя пользователя"></li>
+            <li>
+                <input type="date" id="search-date-from" class="form-control form-control-sm mb-1" placeholder="От даты">
+                <input type="date" id="search-date-to" class="form-control form-control-sm mb-1" placeholder="По дату">
+            </li>
+            <li><button class="btn btn-sm btn-primary" onclick="filterChats('new')">Применить</button></li>
+            <li><button class="btn btn-sm btn-secondary" onclick="clearSearch('new')">Очистить</button></li>
+        </ul>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-md-4">
         <h4>{{ gettext('new_chats', lang) }}</h4>
-        {% if new_chats %}
-            <ul class="list-group">
-                {% for chat in new_chats %}
-                    <li class="list-group-item">
-                        Чат_{{ chat._id }} (Создан: {{ chat.created_at.strftime('%Y-%m-%d %H:%M') }})
-                        <form method="POST" action="{{ url_for('support.take_chat', chat_id=chat._id) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-success float-end">Взять чат</button>
-                        </form>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
+        <ul class="list-group" id="new-chats-list">
+            {% for chat in new_chats %}
+                <li class="list-group-item chat-item" data-id="{{ chat._id }}" data-user="{{ chat.user_name }}" data-date="{{ chat.created_at.strftime('%Y-%m-%d') }}">
+                    Чат от {{ chat.user_name }} ({{ chat._id }})
+                    <form method="POST" action="{{ url_for('support.take_chat', chat_id=chat._id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-success float-end">Взять чат</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+        {% if not new_chats %}
             <p>{{ gettext('no_new_chats', lang) }}</p>
         {% endif %}
     </div>
     <div class="col-md-8">
-        <!-- Здесь можно добавить детали выбранного чата, если нужно -->
+        <!-- Детали, если нужно -->
     </div>
 </div>
+
+<script src="/static/js/admin_search.js"></script>
+<script>
+    // Инициализация поиска для новых чатов
+    document.addEventListener('DOMContentLoaded', function() {
+        filterChats('new');
+    });
+</script>
 {% endblock %}

@@ -4,18 +4,51 @@
 
 {% block content %}
 <h2>{{ gettext('chat_title', lang) }}: Чат_{{ chat_id }}</h2>
-{% if chat.admin_id %}
-    <p><strong>{{ gettext('admin_assigned', lang) }}:</strong> {{ chat.admin_name }}</p>
+{% if is_admin %}
+    <p class="alert alert-info"><strong>Пользователь:</strong> {{ chat.user_name }}</p>
+{% else %}
+    {% if chat.admin_name %}
+        <p class="alert alert-success"><strong>Служба поддержки:</strong> {{ chat.admin_name }}</p>
+    {% else %}
+        <p class="alert alert-success"><strong>Служба поддержки</strong></p>
+    {% endif %}
 {% endif %}
-<a href="{{ url_for('support.chats') }}" class="btn btn-outline-secondary mb-3">{{ gettext('back', lang) }}</a>
+
+<!-- Скрытый div для передачи данных в JS -->
+<div id="chat-data" data-chat-id="{{ chat_id }}" data-is-admin="{{ is_admin }}" data-user-name="{{ chat.user_name | default('') }}" data-admin-name="{{ chat.admin_name | default('') }}"></div>
+
+<div class="d-flex justify-content-between mb-3">
+    {% if is_admin %}
+        <a href="{{ url_for('support.admin_panel') }}" class="btn btn-outline-secondary">{{ gettext('back', lang) }}</a>
+        <!-- Кнопка освободить чат справа -->
+        <form method="POST" action="{{ url_for('support.release_chat', chat_id=chat_id) }}" style="display: inline;" onsubmit="return confirm('Освободить чат и вернуть в очередь?');">
+            <button type="submit" class="btn btn-warning">Освободить чат</button>
+        </form>
+    {% else %}
+        <a href="{{ url_for('support.chats') }}" class="btn btn-outline-secondary">{{ gettext('back', lang) }}</a>
+    {% endif %}
+</div>
 
 <div id="chat-container" style="border: 1px solid #ccc; height: 70vh; width: 100%; position: relative; overflow-y: auto; padding: 10px;">
     <div id="chat-messages" style="position: absolute; top: 0; bottom: 60px; left: 0; right: 0; overflow-y: auto; padding: 10px;">
         {% for message in chat.messages %}
-            <p><strong>{{ message.sender }} ({{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}):</strong> {{ message.content }}</p>
+            <div class="mb-2">
+                <strong>
+                    {% if message.sender == 'user' %}
+                        {{ chat.user_name }}
+                    {% elif message.sender == 'support' %}
+                        {{ chat.admin_name }}
+                    {% else %}
+                        {{ message.sender }}
+                    {% endif %}
+                </strong>: {{ message.content }}
+                <small class="text-muted float-end">{{ message.timestamp.strftime('%H:%M') }}</small>
+            </div>
         {% endfor %}
     </div>
-    <form id="message-form" method="POST" action="{{ url_for('support.send_message', chat_id=chat_id) }}" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: #f8f9fa; display: flex; align-items: center;">
+    <form id="message-form" method="POST" 
+          action="{{ url_for('support.send_message', chat_id=chat_id) if not is_admin else url_for('support.admin_send_message', chat_id=chat_id) }}" 
+          style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: #f8f9fa; display: flex; align-items: center;">
         <div class="mb-3 flex-grow-1 me-2">
             <textarea name="message" id="message-input" class="form-control" rows="2" placeholder="{{ gettext('type_message', lang) }}" required></textarea>
         </div>
@@ -24,7 +57,4 @@
 </div>
 
 <script src="/static/js/support.js"></script>
-<script>
-    initializeWebSocket('{{ chat_id }}');
-</script>
 {% endblock %}
