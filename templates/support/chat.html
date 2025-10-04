@@ -46,8 +46,7 @@
             </div>
         {% endfor %}
     </div>
-    <form id="message-form" method="POST" 
-          action="{{ url_for('support.send_message', chat_id=chat_id) if not is_admin else url_for('support.admin_send_message', chat_id=chat_id) }}" 
+    <form id="message-form" 
           style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: #f8f9fa; display: flex; align-items: center;">
         <div class="mb-3 flex-grow-1 me-2">
             <textarea name="message" id="message-input" class="form-control" rows="2" placeholder="{{ gettext('type_message', lang) }}" required></textarea>
@@ -56,5 +55,6 @@
     </form>
 </div>
 
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="/static/js/support.js"></script>
 {% endblock %}

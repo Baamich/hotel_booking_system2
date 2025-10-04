@@ -1,6 +1,6 @@
 from flask import Flask, session, render_template, redirect, url_for
 from flask_cors import CORS
-from flask_socketio import SocketIO, join_room
+from flask_socketio import SocketIO
 from config import Config
 from dotenv import load_dotenv
 from translations import gettext
@@ -14,7 +14,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)  # Для CORS, если нужно
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')  # Указан async_mode и CORS
+socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:5000")  # Убрано async_mode, используем дефолт
 
 # Добавляем gettext как глобальную функцию для Jinja2
 app.jinja_env.globals['gettext'] = gettext
@@ -29,6 +29,7 @@ from routes.auth import auth_bp
 from routes.search import search_bp
 from routes.booking import booking_bp
 from routes.support import support_bp
+from routes.socketio_events import register_socketio_events
 
 # Регистрация blueprint'ов
 app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -36,18 +37,13 @@ app.register_blueprint(search_bp, url_prefix='/search')
 app.register_blueprint(booking_bp, url_prefix='/booking')
 app.register_blueprint(support_bp, url_prefix='/support')
 
+# Регистрация Socket.IO событий
+register_socketio_events(socketio)
+
 @app.route('/')
 def index():
     lang = session.get('lang', 'eng')
     return redirect(url_for('search.search_hotels'))  
-
-@socketio.on('connect')
-def handle_connect():
-    pass
-
-@socketio.on('join')
-def handle_join(data):
-    join_room(data['chat_id'])
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)
