@@ -1,11 +1,12 @@
 from models import db
 from bson import ObjectId
 import datetime
+from models.hotel_photo import HotelPhoto
 
 class Hotel:
     @staticmethod
     def create_hotel(data):
-        """Создание отеля. data: dict с полями: name, city, price_usd, category, description, photos, reviews"""
+        """Создание отеля. data: dict с полями: name, city, price_usd, category, description, photo_ids, reviews"""
         data['created_at'] = datetime.datetime.utcnow()
         result = db.hotels.insert_one(data)
         return str(result.inserted_id)
@@ -16,13 +17,16 @@ class Hotel:
         for hotel in hotels:
             if 'price_usd' in hotel and 'price' not in hotel:
                 hotel['price'] = hotel['price_usd']  # Совместимость
+            hotel['photos'] = HotelPhoto.get_photos_by_application(hotel.get('_id', '')) if hotel.get('photo_ids') else []
         return hotels
 
     @staticmethod
     def get_hotel_by_id(hotel_id):
         hotel = db.hotels.find_one({'_id': ObjectId(hotel_id)})
-        if hotel and 'price_usd' in hotel and 'price' not in hotel:
-            hotel['price'] = hotel['price_usd']  # Совместимость
+        if hotel:
+            if 'price_usd' in hotel and 'price' not in hotel:
+                hotel['price'] = hotel['price_usd']  # Совместимость
+            hotel['photos'] = HotelPhoto.get_photos_by_application(hotel_id) if hotel.get('photo_ids') else []
         return hotel
 
     @staticmethod

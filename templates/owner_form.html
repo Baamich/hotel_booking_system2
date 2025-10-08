@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gettext('owner_form_title', lang) }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>{{ gettext('owner_form_title', lang) }}</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('hotel_name', lang) }}</label>
+                <input type="text" class="form-control" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('city', lang) }}</label>
+                <input type="text" class="form-control" name="city" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('price_usd', lang) }}</label>
+                <input type="number" class="form-control" name="price_usd" step="0.01" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('category', lang) }}</label>
+                <select name="category" class="form-control" required>
+                    <option value="1">1 {{ gettext('stars', lang) }}</option>
+                    <option value="2">2 {{ gettext('stars', lang) }}</option>
+                    <option value="3">3 {{ gettext('stars', lang) }}</option>
+                    <option value="4">4 {{ gettext('stars', lang) }}</option>
+                    <option value="5">5 {{ gettext('stars', lang) }}</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('description', lang) }}</label>
+                <textarea class="form-control" name="description" rows="5" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('photos', lang) }}</label>
+                <input type="file" class="form-control" name="photos" multiple accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary">{{ gettext('submit_hotel', lang) }}</button>
+        </form>
+        <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary mt-3">{{ gettext('back', lang) }}</a>
+    </div>
+</div>
+{% endblock %}

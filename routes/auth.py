@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from models.user import User
 from models.hotel import Hotel
+from models.hotel_application import HotelApplication
 from config import Config
 from translations import gettext
 from currencies import CURRENCIES, convert_price, get_symbol
 import re
+import base64
 
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
 
@@ -47,7 +49,7 @@ def register():
             flash(gettext('flash_error_prefix', lang) + error_msg)
             return render_template('register.html', lang=lang)
         
-        user_id = User.create_user(email, password, name)  # admin=False по умолчанию
+        user_id = User.create_user(email, password, name)  # admin=False, moderator=False по умолчанию
         flash(gettext('flash_success', lang) + 'Регистрация успешна! Войдите в аккаунт.')
         return redirect(url_for('auth.login'))
     
@@ -88,8 +90,9 @@ def profile():
     
     user_id = session['user_id']
     bookings = User.get_user_bookings(user_id)
+    applications = HotelApplication.get_user_applications(user_id)
     
-    return render_template('profile.html', user=session, bookings=bookings, lang=lang)
+    return render_template('profile.html', user=session, bookings=bookings, applications=applications, lang=lang)
 
 @auth_bp.route('/profile/history')
 def profile_history():
@@ -143,3 +146,54 @@ def check_email():
     email = request.form.get('email')
     exists = User.get_user_by_email(email) is not None
     return jsonify({'exists': exists})
+
+@auth_bp.route('/owner_form', methods=['GET', 'POST'])
+def owner_form():
+    lang = session.get('lang', 'eng')
+    if 'user_id' not in session:
+        flash(gettext('flash_error_prefix', lang) + 'Войдите в аккаунт!')
+        return redirect(url_for('auth.login'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        city = request.form.get('city')
+        price_usd = request.form.get('price_usd')
+        category = request.form.get('category')
+        description = request.form.get('description')
+        photos = request.files.getlist('photos')
+
+        if not all([name, city, price_usd, category, description]):
+            flash(gettext('flash_error_prefix', lang) + 'Заполните все поля!')
+            return render_template('owner_form.html', lang=lang)
+
+        try:
+            price_usd = float(price_usd)
+            if price_usd <= 0:
+                raise ValueError
+        except ValueError:
+            flash(gettext('flash_error_prefix', lang) + 'Цена должна быть числом больше 0!')
+            return render_template('owner_form.html', lang=lang)
+
+        # Конвертация фотографий в Base64
+        photo_data = []
+        for photo in photos:
+            if photo:
+                photo_b64 = base64.b64encode(photo.read()).decode('utf-8')
+                photo_data.append(photo_b64)
+
+        hotel_data = {
+            'name': name,
+            'city': city,
+            'price_usd': price_usd,
+            'category': int(category),
+            'description': description,
+            'photos': photo_data,
+            'reviews': [],
+            'rooms': {'standard': {'available': True}, 'deluxe': {'available': True}}
+        }
+
+        HotelApplication.create_application(session['user_id'], hotel_data)
+        flash(gettext('flash_success', lang) + 'Заявка отправлена на модерацию!')
+        return redirect(url_for('auth.profile'))
+
+    return render_template('owner_form.html', lang=lang)

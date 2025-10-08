@@ -5,14 +5,15 @@ import datetime
 
 class User:
     @staticmethod
-    def create_user(email, password, name, admin=False):
-        """Регистрация: хэшируем пароль с добавлением статуса admin"""
+    def create_user(email, password, name, admin=False, moderator=False):
+        """Регистрация: хэшируем пароль с добавлением статуса admin и moderator"""
         hashed_pw = generate_password_hash(password)
         data = {
             'email': email,
             'password': hashed_pw,
             'name': name,
             'admin': admin,
+            'moderator': moderator,  # Добавляем поле moderator
             'bookings': [],
             'viewed_hotels': [],
             'created_at': datetime.datetime.utcnow()
@@ -103,6 +104,20 @@ class User:
         """Получение статуса администратора"""
         user = db.users.find_one({'_id': ObjectId(user_id)})
         return user.get('admin', False) if user else False
+
+    @staticmethod
+    def set_moderator_status(user_id, moderator_status):
+        """Установка статуса модератора"""
+        db.users.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$set': {'moderator': moderator_status}}
+        )
+
+    @staticmethod
+    def get_moderator_status(user_id):
+        """Получение статуса модератора"""
+        user = db.users.find_one({'_id': ObjectId(user_id)})
+        return user.get('moderator', False) if user else False
 
     @staticmethod
     def get_user_by_id(user_id):
