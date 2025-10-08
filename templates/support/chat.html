@@ -4,15 +4,13 @@
 
 {% block content %}
 <h2>{{ gettext('chat_title', lang) }}: Чат_{{ chat_id }}</h2>
-{% if is_admin %}
-    <p class="alert alert-info"><strong>Пользователь:</strong> {{ chat.user_name }}</p>
-{% else %}
-    {% if chat.admin_name %}
-        <p class="alert alert-success"><strong>Служба поддержки:</strong> {{ chat.admin_name }}</p>
+<div id="chat-header">
+    {% if is_admin %}
+        <p class="alert alert-info"><strong>Пользователь:</strong> {{ chat.user_name }}</p>
     {% else %}
-        <p class="alert alert-success"><strong>Служба поддержки</strong></p>
+        <p class="alert alert-success" id="support-header"><strong>Служба поддержки</strong>{{ ' ' + chat.admin_name if chat.admin_name else '' }}</p>
     {% endif %}
-{% endif %}
+</div>
 
 <!-- Скрытый div для передачи данных в JS -->
 <div id="chat-data" data-chat-id="{{ chat_id }}" data-is-admin="{{ is_admin }}" data-user-name="{{ chat.user_name | default('') }}" data-admin-name="{{ chat.admin_name | default('') }}"></div>
@@ -37,7 +35,7 @@
                     {% if message.sender == 'user' %}
                         {{ chat.user_name }}
                     {% elif message.sender == 'support' %}
-                        {{ chat.admin_name }}
+                        {{ chat.admin_name if chat.admin_name else 'Служба поддержки' }}
                     {% else %}
                         {{ message.sender }}
                     {% endif %}

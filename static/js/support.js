@@ -4,7 +4,7 @@ function initializeWebSocket(chatId) {
     const chatData = document.getElementById('chat-data');
     const isAdmin = chatData.dataset.isAdmin === 'True';
     const userName = chatData.dataset.userName;
-    const adminName = chatData.dataset.adminName;
+    let adminName = chatData.dataset.adminName;
     
     // Инициализация Socket.IO с правильным путём
     socket = io.connect('http://127.0.0.1:5000');
@@ -34,6 +34,40 @@ function initializeWebSocket(chatId) {
         `;
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    socket.on('update_admin_name', (data) => {
+        adminName = data.admin_name;
+        const header = document.getElementById('support-header');
+        if (header && !isAdmin) {
+            header.textContent = `Служба поддержки${adminName ? ` ${adminName}` : ''}`;
+        }
+        // Обновляем существующие сообщения
+        const messages = document.querySelectorAll('#chat-messages .mb-2');
+        messages.forEach(msg => {
+            const strong = msg.querySelector('strong');
+            if (strong && strong.textContent === 'Служба поддержки') {
+                strong.textContent = adminName || 'Служба поддержки';
+            }
+        });
+    });
+
+    socket.on('chat_released', (data) => {
+        if (data.chat_id === chatId && !isAdmin) {
+            adminName = null; // Сбрасываем имя админа на null
+            const header = document.getElementById('support-header');
+            if (header) {
+                header.textContent = 'Служба поддержки'; // Устанавливаем только "Служба поддержки"
+            }
+            // Обновляем все сообщения, где отображается имя админа
+            const messages = document.querySelectorAll('#chat-messages .mb-2');
+            messages.forEach(msg => {
+                const strong = msg.querySelector('strong');
+                if (strong && strong.textContent !== userName) {
+                    strong.textContent = 'Служба поддержки'; // Возвращаем к умолчанию
+                }
+            });
+        }
     });
 
     socket.on('disconnect', () => {

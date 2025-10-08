@@ -28,7 +28,7 @@ app.jinja_env.globals['User'] = User  # Регистрация класса User
 from routes.auth import auth_bp
 from routes.search import search_bp
 from routes.booking import booking_bp
-from routes.support import support_bp
+from routes.support import support_bp, emit_socket_event
 from routes.socketio_events import register_socketio_events
 
 # Регистрация blueprint'ов
@@ -36,6 +36,10 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(search_bp, url_prefix='/search')
 app.register_blueprint(booking_bp, url_prefix='/booking')
 app.register_blueprint(support_bp, url_prefix='/support')
+
+# Переопределение функции эмиссии событий
+def emit_socket_event(event_name, data, broadcast=True, namespace='/'):
+    socketio.emit(event_name, data, broadcast=broadcast, namespace=namespace)
 
 # Регистрация Socket.IO событий
 register_socketio_events(socketio)

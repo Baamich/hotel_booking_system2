@@ -12,6 +12,10 @@ support_bp = Blueprint('support', __name__)
 mongo = MongoClient(os.getenv('MONGO_URI'))
 db = mongo.get_database()
 
+def emit_socket_event(event_name, data, broadcast=True, namespace='/'):
+    # Функция для эмиссии событий (будет переопределена в app.py)
+    pass
+
 @support_bp.route('/chats')
 def chats():
     lang = session.get('lang', 'eng')
@@ -60,6 +64,12 @@ def new_chat():
                 'status': 'new'
             }
             chat_id = db.chats.insert_one(chat).inserted_id
+            # Эмитим событие нового чата
+            emit_socket_event('new_chat', {
+                '_id': str(chat_id),
+                'user_name': user_name,
+                'created_at': now
+            })
             return redirect(url_for('support.chat', chat_id=chat_id))
         else:
             flash(gettext('flash_error_prefix', lang) + 'Введите сообщение!')
@@ -119,6 +129,7 @@ def release_chat(chat_id):
         return_document=True
     )
     if chat:
+        emit_socket_event('chat_released', {'chat_id': str(chat_id)})
         flash(gettext('flash_success', lang) + 'Чат освобождён и возвращён в очередь!')
         return redirect(url_for('support.admin_panel'))
     else:
@@ -160,6 +171,7 @@ def take_chat(chat_id):
             return_document=True
         )
         if chat:
+            emit_socket_event('take_chat', {'chat_id': str(chat_id)})
             flash(gettext('flash_success', lang) + 'Чат успешно взят!')
             return redirect(url_for('support.admin_chat', chat_id=chat_id))
         else:
