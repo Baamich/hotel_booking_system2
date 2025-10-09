@@ -3,8 +3,10 @@
 {% block title %}{{ gettext('profile_title', lang) }}{% endblock %}
 
 {% block content %}
-<h2>{{ gettext('profile_title', lang) }}, {{ user.user_name }}</h2>
-<p>{{ gettext('profile_email', lang) }}: {{ user.user_email }}</p>
+<div class="mb-3">
+    <h2>{{ gettext('profile_title', lang) }}, {{ user.user_name }}</h2>
+    <p>{{ gettext('profile_email', lang) }}: {{ user.user_email }}</p>
+</div>
 
 <h3>{{ gettext('bookings_history', lang) }}</h3>
 {% if bookings %}
@@ -20,26 +22,34 @@
     <p>{{ gettext('no_bookings', lang) }}</p>
 {% endif %}
 
-<h3>{{ gettext('pending_hotels', lang) }}</h3>
+<h3>{{ gettext('pending_applications', lang) }} ({{ applications|length }})</h3>
+<div class="mb-3">
+    <a href="{{ url_for('auth.owner_form') }}" class="btn btn-outline-primary">{{ gettext('owner_submit_btn', lang) }}</a>
+    <a href="{{ url_for('support.chats') }}" class="btn btn-outline-primary">{{ gettext('support_btn', lang) }}</a>
+</div>
 {% if applications %}
-    <ul class="list-group">
-        {% for app in applications %}
-            <li class="list-group-item">
-                <strong>{{ app.hotel_data.get('name', 'Без названия') }}</strong> ({{ gettext('status_' + app.status, lang) }})<br>
-                <p><strong>{{ gettext('city', lang) }}:</strong> {{ app.hotel_data.get('city', 'Не указан') }}</p>
-                <p><strong>{{ gettext('price_usd', lang) }}:</strong> {{ app.hotel_data.get('price_usd', 0) }} USD</p>
-                <p><strong>{{ gettext('category', lang) }}:</strong> {{ app.hotel_data.get('category', 'Не указана') }} {{ gettext('stars', lang) }}</p>
-                {% if app.status == 'rejected' and app.rejection_reason %}
-                    <p><strong>{{ gettext('rejection_reason', lang) }}:</strong> {{ app.rejection_reason }}</p>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#applicationsCollapse" aria-expanded="false" aria-controls="applicationsCollapse">
+        {{ gettext('toggle_applications', lang) }} ({{ applications|length }})
+    </button>
+    <div class="collapse" id="applicationsCollapse">
+        <ul class="list-group">
+            {% for app in applications %}
+                <li class="list-group-item">
+                    <strong>{{ app.hotel_data.get('name', 'Без названия') }}</strong> ({{ gettext('status_' + app.status, lang) }})<br>
+                    <p><strong>{{ gettext('city', lang) }}:</strong> {{ app.hotel_data.get('city', 'Не указан') }}</p>
+                    <p><strong>{{ gettext('price_usd', lang) }}:</strong> {{ app.hotel_data.get('price_usd', 0) }} USD</p>
+                    <p><strong>{{ gettext('category', lang) }}:</strong> {{ app.hotel_data.get('category', 'Не указана') }} {{ gettext('stars', lang) }}</p>
+                    <p><strong>{{ gettext('created_at', lang) }}:</strong> {{ app.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    {% if app.status == 'rejected' and app.rejection_reason %}
+                        <p><strong>{{ gettext('rejection_reason', lang) }}:</strong> {{ app.rejection_reason }}</p>
+                        <p><strong>{{ gettext('rejected_at', lang) }}:</strong> {{ app.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 {% else %}
-    <p>{{ gettext('no_pending_hotels', lang) }}</p>
+    <p>{{ gettext('no_pending_applications', lang) }}</p>
 {% endif %}
 
-<a href="{{ url_for('auth.owner_form') }}" class="btn btn-outline-primary mt-3">{{ gettext('owner_form', lang) }}</a>
-<a href="{{ url_for('support.chats') }}" class="btn btn-outline-primary mt-3">{{ gettext('support_btn', lang) }}</a>
-<a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger mt-3">{{ gettext('logout', lang) }}</a>
 {% endblock %}

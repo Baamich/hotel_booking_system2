@@ -50,3 +50,160 @@
         width: 80% !important;
     }
 }
+
+.welcome-line {
+    border-color: #0d6efd !important;  /* Голубой как primary Bootstrap */
+    border-width: 3px !important;
+    border-radius: 10px;
+    opacity: 0.8;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Стили для навбара */
+.navbar-dark {
+    background-color: #1c2526 !important; /* Тёмно-серый фон для контраста */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Тень для глубины */
+}
+
+.navbar-brand {
+    margin-left: 1rem;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #ffffff !important; /* Белый текст для бренда */
+    transition: color 0.2s;
+}
+
+.navbar-brand:hover {
+    color: #0d6efd !important; /* Голубой при наведении */
+}
+
+.nav-link {
+    color: #d1d1d1 !important; /* Светло-серый для ссылок */
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #0d6efd !important; /* Голубой при наведении */
+}
+
+.nav-link i.fas.fa-heart {
+    color: #ff4d4d; /* Красная иконка сердца */
+    transition: color 0.2s;
+}
+
+.nav-link i.fas.fa-heart:hover {
+    color: #cc0000; /* Темно-красный при наведении */
+}
+
+/* Dropdown для языка и валюты */
+.dropdown-menu {
+    background-color: #2c3e50; /* Тёмный фон для выпадающего меню */
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-item {
+    color: #ffffff !important;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #0d6efd !important; /* Голубой фон при наведении */
+    color: #ffffff !important;
+}
+
+/* Стили для выпадающего меню фильтров в search.html */
+#filterDropdown + .dropdown-menu {
+    background-color: #34495e; /* Чуть светлее тёмный фон для лучшей читаемости */
+    color: #ffffff !important; /* Белый текст для всех элементов */
+    padding: 1.5rem;
+}
+
+#filterDropdown + .dropdown-menu .form-label {
+    color: #ffffff !important; /* Белый цвет для меток формы */
+    font-weight: 500;
+}
+
+#filterDropdown + .dropdown-menu .form-control,
+#filterDropdown + .dropdown-menu .form-select {
+    background-color: #ffffff !important; /* Белый фон для полей ввода */
+    color: #333333 !important; /* Тёмный текст в полях */
+    border: 1px solid #ced4da;
+}
+
+#filterDropdown + .dropdown-menu .form-control:focus,
+#filterDropdown + .dropdown-menu .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#filterDropdown + .dropdown-menu .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #ffffff;
+}
+
+#filterDropdown + .dropdown-menu .btn-primary:hover {
+    background-color: #005cbf;
+    border-color: #005cbf;
+}
+
+#filterDropdown + .dropdown-menu .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #ffffff;
+}
+
+#filterDropdown + .dropdown-menu .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #5a6268;
+}
+
+/* Общие стили для карточек отелей (в search) */
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Для форм (register, login) */
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Флажки в dropdown */
+.flag-icon {
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+/* Новый стиль для иконки валюты */
+.currency-icon {
+    font-size: 1.2em;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .welcome-line {
+        width: 80% !important;
+    }
+
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+    }
+
+    #filterDropdown + .dropdown-menu {
+        min-width: 100%; /* Полная ширина на мобильных */
+    }
+}

@@ -91,6 +91,8 @@ def profile():
     user_id = session['user_id']
     bookings = User.get_user_bookings(user_id)
     applications = HotelApplication.get_user_applications(user_id)
+    # Сортировка заявок по created_at (от новых к старым)
+    applications = sorted(applications, key=lambda x: x['created_at'], reverse=True)
     
     return render_template('profile.html', user=session, bookings=bookings, applications=applications, lang=lang)
 

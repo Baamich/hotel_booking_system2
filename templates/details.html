@@ -14,9 +14,12 @@
         <div class="row">
             {% for photo in hotel.photos %}
                 <div class="col-md-4">
-                    <img src="https://via.placeholder.com/300x200?text={{ photo }}" class="img-fluid mb-3" alt="Photo">
+                    <img src="data:image/jpeg;base64,{{ photo }}" class="img-fluid mb-3" alt="Hotel Photo">
                 </div>
             {% endfor %}
+            {% if not hotel.photos %}
+                <p>{{ gettext('no_photos', lang) }}</p>
+            {% endif %}
         </div>
         
         <h4>{{ gettext('map', lang) }}</h4>
@@ -26,7 +29,7 @@
             height="400" 
             frameborder="0" 
             style="border:0" 
-            src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q={{ hotel.city }}" 
+            src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.city }}" 
             allowfullscreen>
         </iframe>
 
@@ -34,18 +37,18 @@
         {% if 'user_id' in session %}
             <form method="POST" action="{{ url_for('search.add_review', hotel_id=hotel._id) }}" enctype="multipart/form-data">
                 <select name="rating" class="form-control mb-1">
-                    <option value="1">1 звезда</option>
-                    <option value="2">2 звезды</option>
-                    <option value="3">3 звезды</option>
-                    <option value="4">4 звезды</option>
-                    <option value="5" selected>5 звезд</option>
+                    <option value="1">1 {{ gettext('stars', lang) }}</option>
+                    <option value="2">2 {{ gettext('stars', lang) }}</option>
+                    <option value="3">3 {{ gettext('stars', lang) }}</option>
+                    <option value="4">4 {{ gettext('stars', lang) }}</option>
+                    <option value="5" selected>5 {{ gettext('stars', lang) }}</option>
                 </select>
-                <textarea name="text" class="form-control mb-1" placeholder="Ваш отзыв" rows="2"></textarea>
+                <textarea name="text" class="form-control mb-1" placeholder="{{ gettext('add_review', lang) }}" rows="2"></textarea>
                 <input type="file" name="photo" multiple class="form-control mb-1">
-                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                <button type="submit" class="btn btn-primary">{{ gettext('add_review', lang) }}</button>
             </form>
         {% else %}
-            <p>Войдите, чтобы оставить отзыв.</p>
+            <p>{{ gettext('login_to_review', lang) }}</p>
         {% endif %}
         
         <h4>{{ gettext('reviews', lang) }}</h4>
@@ -66,7 +69,7 @@
                             </div>
                         {% endif %}
                     </div>
-                    <p class="text-end mt-2 mb-0">Рейтинг: {{ review.rating }}/5 ⭐</p>
+                    <p class="text-end mt-2 mb-0">{{ gettext('rating', lang) }}: {{ review.rating }}/5 ⭐</p>
                 </li>
             {% endfor %}
             {% if hotel.reviews|length > 3 %}
@@ -86,7 +89,7 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <p class="text-end mt-2 mb-0">Рейтинг: {{ review.rating }}/5 ⭐</p>
+                                <p class="text-end mt-2 mb-0">{{ gettext('rating', lang) }}: {{ review.rating }}/5 ⭐</p>
                             </div>
                         {% endfor %}
                     </div>
@@ -117,10 +120,10 @@
         const btn = event.target;
         if (hidden.style.display === 'none') {
             hidden.style.display = 'block';
-            btn.textContent = 'Скрыть все отзывы';
+            btn.textContent = '{{ gettext("hide_reviews", lang) }}';
         } else {
             hidden.style.display = 'none';
-            btn.textContent = gettext('show_all_reviews', lang);
+            btn.textContent = '{{ gettext("show_all_reviews", lang) }}';
         }
     }
 
@@ -186,7 +189,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.error) {
-                                showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
+                                showToast(gettext('flash_error_prefix', '{{ lang }}') + '{{ gettext("currency_update_failed", lang) }}', true);
                                 return;
                             }
                             const priceEl = document.querySelector('.price-per-night');
@@ -198,13 +201,13 @@
                         })
                         .catch(error => {
                             console.error('Fetch convert_price error:', error);
-                            showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
+                            showToast(gettext('flash_error_prefix', '{{ lang }}') + '{{ gettext("currency_update_failed", lang) }}', true);
                         });
                     }
                 })
                 .catch(error => {
                     console.error('Fetch set_currency error:', error);
-                    showToast(gettext('flash_error_prefix', '{{ lang }}') + 'Не удалось обновить валюту!', true);
+                    showToast(gettext('flash_error_prefix', '{{ lang }}') + '{{ gettext("currency_update_failed", lang) }}', true);
                 });
             });
         });
