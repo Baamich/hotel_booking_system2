@@ -113,7 +113,14 @@ TRANSLATIONS = {
         'pending_hotels': 'Ожидающие отели',
         'no_pending_hotels': 'Нет ожидающих отелей',
         'approve': 'Одобрить',
-        'reject': 'Отклонить'
+        'reject': 'Отклонить',
+        'location_address': 'Адрес отеля',
+        'enter_address': 'Введите адрес (например, улица, город)',
+        'example_address': 'Пример: ул. Центральная 10, Кишинёв',
+        'location_coordinates': 'Координаты отеля',
+        'latitude': 'Широта',
+        'longitude': 'Долгота',
+        'example_coordinates': 'Пример: 47.0167 (широта), 28.8497 (долгота)'
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -223,7 +230,14 @@ TRANSLATIONS = {
         'pending_hotels': 'Pending Hotels',
         'no_pending_hotels': 'No pending hotels',
         'approve': 'Approve',
-        'reject': 'Reject'
+        'reject': 'Reject',
+        'location_address': 'Hotel address',
+        'enter_address': 'Enter address (e.g., street, city)',
+        'example_address': 'Example: Str. Centrala 10, Chisinau',
+        'location_coordinates': 'Hotel coordinates',
+        'latitude': 'Latitude',
+        'longitude': 'Longitude',
+        'example_coordinates': 'Example: 47.0167 (latitude), 28.8497 (longitude)'
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -333,7 +347,14 @@ TRANSLATIONS = {
         'pending_hotels': 'Hoteluri în așteptare',
         'no_pending_hotels': 'Niciun hotel în așteptare',
         'approve': 'Aprobă',
-        'reject': 'Respinge'
+        'reject': 'Respinge',
+        'location_address': 'Adresa hotelului',
+        'enter_address': 'Introduceți adresa (ex. stradă, oraș)',
+        'example_address': 'Exemplu: Str. Centrală 10, Chișinău',
+        'location_coordinates': 'Coordonate hotel',
+        'latitude': 'Latitudine',
+        'longitude': 'Longitudine',
+        'example_coordinates': 'Exemplu: 47.0167 (latitudine), 28.8497 (longitudine)'
     }
 }
 

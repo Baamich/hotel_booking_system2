@@ -23,15 +23,35 @@
         </div>
         
         <h4>{{ gettext('map', lang) }}</h4>
-        <!-- Google Maps iframe (замени YOUR_API_KEY на реальный из .env) -->
-        <iframe 
-            width="100%" 
-            height="400" 
-            frameborder="0" 
-            style="border:0" 
-            src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.city }}" 
-            allowfullscreen>
-        </iframe>
+        <!-- Google Maps iframe с координатами или адресом -->
+        {% if hotel.latitude and hotel.longitude %}
+            <iframe 
+                width="100%" 
+                height="400" 
+                frameborder="0" 
+                style="border:0" 
+                src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.latitude }},{{ hotel.longitude }}" 
+                allowfullscreen>
+            </iframe>
+        {% elif hotel.location_address %}
+            <iframe 
+                width="100%" 
+                height="400" 
+                frameborder="0" 
+                style="border:0" 
+                src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.location_address|urlencode }}" 
+                allowfullscreen>
+            </iframe>
+        {% else %}
+            <iframe 
+                width="100%" 
+                height="400" 
+                frameborder="0" 
+                style="border:0" 
+                src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.city }}" 
+                allowfullscreen>
+            </iframe>
+        {% endif %}
 
         <h4>{{ gettext('add_review', lang) }}</h4>
         {% if 'user_id' in session %}

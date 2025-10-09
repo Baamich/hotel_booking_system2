@@ -37,6 +37,24 @@
                 <label class="form-label">{{ gettext('photos', lang) }}</label>
                 <input type="file" class="form-control" name="photos" multiple accept="image/*">
             </div>
+            <!-- Новые поля для координат и адреса -->
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('location_address', lang) }}</label>
+                <input type="text" class="form-control" name="location_address" placeholder="{{ gettext('enter_address', lang) }}" value="">
+                <small class="form-text text-muted">{{ gettext('example_address', lang) }}: ул. Центральная 10, Кишинёв</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ gettext('location_coordinates', lang) }}</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="number" class="form-control" name="latitude" step="0.000001" placeholder="{{ gettext('latitude', lang) }}" value="">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" class="form-control" name="longitude" step="0.000001" placeholder="{{ gettext('longitude', lang) }}" value="">
+                    </div>
+                </div>
+                <small class="form-text text-muted">{{ gettext('example_coordinates', lang) }}: 47.0167 (широта), 28.8497 (долгота)</small>
+            </div>
             <button type="submit" class="btn btn-primary">{{ gettext('submit_hotel', lang) }}</button>
         </form>
         <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary mt-3">{{ gettext('back', lang) }}</a>

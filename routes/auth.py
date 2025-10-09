@@ -7,6 +7,7 @@ from translations import gettext
 from currencies import CURRENCIES, convert_price, get_symbol
 import re
 import base64
+import requests
 
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
 
@@ -163,9 +164,12 @@ def owner_form():
         category = request.form.get('category')
         description = request.form.get('description')
         photos = request.files.getlist('photos')
+        location_address = request.form.get('location_address')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
 
         if not all([name, city, price_usd, category, description]):
-            flash(gettext('flash_error_prefix', lang) + 'Заполните все поля!')
+            flash(gettext('flash_error_prefix', lang) + 'Заполните все обязательные поля!')
             return render_template('owner_form.html', lang=lang)
 
         try:
@@ -183,6 +187,29 @@ def owner_form():
                 photo_b64 = base64.b64encode(photo.read()).decode('utf-8')
                 photo_data.append(photo_b64)
 
+        # Обработка координат или адреса
+        if latitude and longitude:
+            try:
+                latitude = float(latitude)
+                longitude = float(longitude)
+            except ValueError:
+                flash(gettext('flash_error_prefix', lang) + 'Координаты должны быть числами!')
+                return render_template('owner_form.html', lang=lang)
+        elif location_address:
+            geocoding_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={requests.utils.quote(location_address)}&key={Config.GOOGLE_MAPS_API_KEY}"
+            response = requests.get(geocoding_url)
+            data = response.json()
+            if data['status'] == 'OK' and data['results']:
+                location = data['results'][0]['geometry']['location']
+                latitude = location['lat']
+                longitude = location['lng']
+            else:
+                flash(gettext('flash_error_prefix', lang) + 'Не удалось определить координаты по адресу. Укажите координаты вручную.')
+                return render_template('owner_form.html', lang=lang)
+        else:
+            flash(gettext('flash_error_prefix', lang) + 'Укажите адрес или координаты!')
+            return render_template('owner_form.html', lang=lang)
+
         hotel_data = {
             'name': name,
             'city': city,
@@ -191,7 +218,10 @@ def owner_form():
             'description': description,
             'photos': photo_data,
             'reviews': [],
-            'rooms': {'standard': {'available': True}, 'deluxe': {'available': True}}
+            'rooms': {'standard': {'available': True}, 'deluxe': {'available': True}},
+            'location_address': location_address,
+            'latitude': latitude,
+            'longitude': longitude
         }
 
         HotelApplication.create_application(session['user_id'], hotel_data)

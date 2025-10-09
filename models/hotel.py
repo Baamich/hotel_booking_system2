@@ -1,6 +1,7 @@
 from models import db
 from bson import ObjectId
 from datetime import datetime
+import requests
 
 class Hotel:
     @staticmethod
@@ -15,7 +16,10 @@ class Hotel:
             'photos': data.get('photos', []),
             'reviews': data.get('reviews', []),
             'rooms': data.get('rooms', {'standard': {'available': True}, 'deluxe': {'available': True}}),
-            'created_at': datetime.utcnow()
+            'created_at': datetime.utcnow(),
+            'location_address': data.get('location_address'),  # Новый опциональный поля
+            'latitude': float(data.get('latitude')) if data.get('latitude') else None,  # Новый опциональный поля
+            'longitude': float(data.get('longitude')) if data.get('longitude') else None  # Новый опциональный поля
         }
         result = db.hotels.insert_one(hotel)
         return str(result.inserted_id)
