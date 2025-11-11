@@ -1,0 +1,7 @@
+{% if applications %}
+    {% for app in applications %}
+        {% include 'partials/application_item.html' with context %}
+    {% endfor %}
+{% else %}
+    <p class="text-muted">{{ gettext('no_applications_filtered', lang) }}</p>
+{% endif %}

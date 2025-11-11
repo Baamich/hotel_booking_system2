@@ -22,34 +22,104 @@
     <p>{{ gettext('no_bookings', lang) }}</p>
 {% endif %}
 
-<h3>{{ gettext('pending_applications', lang) }} ({{ applications|length }})</h3>
 <div class="mb-3">
     <a href="{{ url_for('auth.owner_form') }}" class="btn btn-outline-primary">{{ gettext('owner_submit_btn', lang) }}</a>
     <a href="{{ url_for('support.chats') }}" class="btn btn-outline-primary">{{ gettext('support_btn', lang) }}</a>
 </div>
-{% if applications %}
-    <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#applicationsCollapse" aria-expanded="false" aria-controls="applicationsCollapse">
-        {{ gettext('toggle_applications', lang) }} ({{ applications|length }})
-    </button>
-    <div class="collapse" id="applicationsCollapse">
-        <ul class="list-group">
-            {% for app in applications %}
-                <li class="list-group-item">
-                    <strong>{{ app.hotel_data.get('name', 'Без названия') }}</strong> ({{ gettext('status_' + app.status, lang) }})<br>
-                    <p><strong>{{ gettext('city', lang) }}:</strong> {{ app.hotel_data.get('city', 'Не указан') }}</p>
-                    <p><strong>{{ gettext('price_usd', lang) }}:</strong> {{ app.hotel_data.get('price_usd', 0) }} USD</p>
-                    <p><strong>{{ gettext('category', lang) }}:</strong> {{ app.hotel_data.get('category', 'Не указана') }} {{ gettext('stars', lang) }}</p>
-                    <p><strong>{{ gettext('created_at', lang) }}:</strong> {{ app.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                    {% if app.status == 'rejected' and app.rejection_reason %}
-                        <p><strong>{{ gettext('rejection_reason', lang) }}:</strong> {{ app.rejection_reason }}</p>
-                        <p><strong>{{ gettext('rejected_at', lang) }}:</strong> {{ app.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-{% else %}
-    <p>{{ gettext('no_pending_applications', lang) }}</p>
-{% endif %}
 
+<h3>{{ gettext('pending_applications', lang) }} (<span id="apps-count">{{ applications|length }}</span>)</h3>
+
+<button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#applicationsCollapse" aria-expanded="true">
+    {{ gettext('toggle_applications', lang) }} (<span id="toggle-count">{{ applications|length }}</span>)
+</button>
+
+<div class="collapse show" id="applicationsCollapse">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div id="applications-list" class="flex-grow-1">
+            {% if applications %}
+                {% for app in applications %}
+                    {% include 'partials/application_item.html' with context %}
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">{{ gettext('no_applications_filtered', lang) }}</p>
+            {% endif %}
+        </div>
+        <div class="ms-3">
+            <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#filtersModal">
+                {{ gettext('show_filters', lang) }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно фильтров (поверх всего) -->
+<div class="modal fade" id="filtersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ gettext('filter_status', lang) }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="filters-form">
+                    <div class="mb-3">
+                        <label class="form-label">{{ gettext('filter_status', lang) }}</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="all">{{ gettext('all_applications', lang) }}</option>
+                            <option value="pending">{{ gettext('pending_status', lang) }}</option>
+                            <option value="approved">{{ gettext('approved_status', lang) }}</option>
+                            <option value="rejected">{{ gettext('rejected_status', lang) }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ gettext('from_date', lang) }}</label>
+                        <input type="date" name="from_date" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ gettext('to_date', lang) }}</label>
+                        <input type="date" name="to_date" class="form-control form-control-sm">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">{{ gettext('apply_filters', lang) }}</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100" data-bs-dismiss="modal">{{ gettext('cancel_btn', lang) }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('filters-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const params = new URLSearchParams(formData).toString();
+
+        try {
+            const response = await fetch(`/auth/profile_applications?${params}`);
+            if (!response.ok) throw new Error('Network error');
+            const html = await response.text();
+
+            document.getElementById('applications-list').innerHTML = html;
+
+            // ПРАВИЛЬНЫЙ СЧЁТЧИК: .card, а не .list-group-item
+            const count = document.querySelectorAll('#applications-list .card').length;
+            document.getElementById('apps-count').textContent = count;
+            document.getElementById('toggle-count').textContent = count;
+
+            bootstrap.Modal.getInstance(document.getElementById('filtersModal')).hide();
+        } catch (err) {
+            console.error('Ошибка:', err);
+            alert('Ошибка загрузки заявок. Проверь консоль.');
+        }
+    });
+
+    // Подгрузка текущих фильтров
+    document.getElementById('filtersModal').addEventListener('show.bs.modal', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.querySelector('[name="status"]').value = urlParams.get('status') || 'all';
+        this.querySelector('[name="from_date"]').value = urlParams.get('from_date') || '';
+        this.querySelector('[name="to_date"]').value = urlParams.get('to_date') || '';
+    });
+</script>
 {% endblock %}

@@ -126,7 +126,18 @@ TRANSLATIONS = {
         'max_10_photos_alert': 'Вы можете загрузить не более 10 фотографий!',
         'select_location_on_map': 'Выберите местоположение на карте',
         'click_on_map_hint': 'Кликните по карте, чтобы поставить маркер',
-        'select_location_alert': 'Пожалуйста, выберите местоположение на карте!'
+        'select_location_alert': 'Пожалуйста, выберите местоположение на карте!',
+        'filter_status': 'Фильтр по статусу',
+        'all_applications': 'Все заявки',
+        'pending_status': 'Ожидание',
+        'approved_status': 'Прошли модерацию',
+        'rejected_status': 'Отклонили модерацию',
+        'from_date': 'От даты',
+        'to_date': 'До даты',
+        'apply_filters': 'Применить',
+        'show_filters': 'Фильтры',
+        'clear_filters': 'Сброс',
+        'no_applications_filtered': 'Нет заявок по выбранным фильтрам.'
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -249,7 +260,18 @@ TRANSLATIONS = {
         'max_10_photos_alert': 'You can upload no more than 10 photos!',
         'select_location_on_map': 'Select location on the map',
         'click_on_map_hint': 'Click on the map to place a marker',
-        'select_location_alert': 'Please select a location on the map!'
+        'select_location_alert': 'Please select a location on the map!',
+        'filter_status': 'Status filter',
+        'all_applications': 'All applications',
+        'pending_status': 'Pending',
+        'approved_status': 'Approved',
+        'rejected_status': 'Rejected',
+        'from_date': 'From date',
+        'to_date': 'To date',
+        'apply_filters': 'Apply',
+        'show_filters': 'Filters',
+        'clear_filters': 'Clear',
+        'no_applications_filtered': 'No applications match the selected filters.'
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -372,7 +394,18 @@ TRANSLATIONS = {
         'max_10_photos_alert': 'Puteți încărca maximum 10 fotografii!',
         'select_location_on_map': 'Selectați locația pe hartă',
         'click_on_map_hint': 'Faceți clic pe hartă pentru a plasa un marker',
-        'select_location_alert': 'Vă rugăm să selectați o locație pe hartă!'
+        'select_location_alert': 'Vă rugăm să selectați o locație pe hartă!',
+        'filter_status': 'Filtru status',
+        'all_applications': 'Toate cererile',
+        'pending_status': 'În așteptare',
+        'approved_status': 'Aprobat',
+        'rejected_status': 'Respins',
+        'from_date': 'De la dată',
+        'to_date': 'Până la dată',
+        'apply_filters': 'Aplică',
+        'show_filters': 'Filtre',
+        'clear_filters': 'Resetează',
+        'no_applications_filtered': 'Nu există cereri care să corespundă filtrelor selectate.'
     }
 }
 

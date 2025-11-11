@@ -92,10 +92,26 @@ def profile():
     user_id = session['user_id']
     bookings = User.get_user_bookings(user_id)
     applications = HotelApplication.get_user_applications(user_id)
-    # Сортировка заявок по created_at (от новых к старым)
-    applications = sorted(applications, key=lambda x: x['created_at'], reverse=True)
     
-    return render_template('profile.html', user=session, bookings=bookings, applications=applications, lang=lang)
+    # НИКАКИХ ФИЛЬТРОВ ПО УМОЛЧАНИЮ!
+    status_filter = request.args.get('status')  # Только если в URL
+    from_date = request.args.get('from_date')
+    to_date = request.args.get('to_date')
+
+    if status_filter and status_filter != 'all':
+        applications = [app for app in applications if app.get('status') == status_filter]
+    if from_date:
+        applications = [app for app in applications if app.get('created_at') >= datetime.fromisoformat(from_date)]
+    if to_date:
+        applications = [app for app in applications if app.get('created_at') <= datetime.fromisoformat(to_date + 'T23:59:59')]
+
+    applications = sorted(applications, key=lambda x: x['created_at'], reverse=True)
+
+    return render_template('profile.html', 
+                          user=session, 
+                          bookings=bookings, 
+                          applications=applications,
+                          lang=lang)
 
 @auth_bp.route('/profile/history')
 def profile_history():
@@ -229,3 +245,29 @@ def owner_form():
         return redirect(url_for('auth.profile'))
 
     return render_template('owner_form.html', lang=lang)
+
+@auth_bp.route('/profile_applications')
+def profile_applications():
+    if 'user_id' not in session:
+        return '<p class="text-danger">Ошибка авторизации</p>', 401
+
+    user_id = session['user_id']
+    applications = HotelApplication.get_user_applications(user_id)
+    lang = session.get('lang', 'eng')
+
+    # Фильтрация
+    status = request.args.get('status', 'all')
+    from_date = request.args.get('from_date')
+    to_date = request.args.get('to_date')
+
+    if status != 'all':
+        applications = [a for a in applications if a.get('status') == status]
+
+    if from_date:
+        applications = [a for a in applications if a.get('created_at') >= datetime.fromisoformat(from_date)]
+    if to_date:
+        applications = [a for a in applications if a.get('created_at') <= datetime.fromisoformat(to_date + 'T23:59:59')]
+
+    applications = sorted(applications, key=lambda x: x['created_at'], reverse=True)
+
+    return render_template('partials/application_list.html', applications=applications, lang=lang)

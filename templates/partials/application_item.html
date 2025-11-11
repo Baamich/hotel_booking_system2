@@ -1,0 +1,63 @@
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body p-3">
+
+        <!-- ВСЁ В ОДНОМ СПИСКЕ — КОМПАКТНО, ~2.5 НА ЭКРАН -->
+        <ul class="list-group list-group-flush fs-6 text-muted mb-0">
+
+            <!-- 1. НАЗВАНИЕ ОТЕЛЯ -->
+            <li class="list-group-item px-0 py-2 d-flex justify-content-between border-bottom">
+                <span class="fw-bold text-primary">Название</span>
+                <span class="fw-bold text-dark">{{ app.hotel_data.get('name', 'Без названия') }}</span>
+            </li>
+
+            <!-- 2. ГОРОД -->
+            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                <span>{{ gettext('city', lang) }}</span>
+                <span class="fw-medium text-dark">{{ app.hotel_data.get('city', '—') }}</span>
+            </li>
+
+            <!-- 3. ЦЕНА -->
+            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                <span>{{ gettext('price_usd', lang) }}</span>
+                <span class="fw-medium text-dark">{{ app.hotel_data.get('price_usd', 0) }} USD</span>
+            </li>
+
+            <!-- 4. КАТЕГОРИЯ -->
+            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                <span>{{ gettext('category', lang) }}</span>
+                <span class="fw-medium text-dark">
+                    {{ app.hotel_data.get('category', '') }} {{ gettext('stars', lang) }}
+                </span>
+            </li>
+
+            <!-- 5. ДАТА ПОДАЧИ -->
+            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                <span>{{ gettext('created_at', lang) }}</span>
+                <span class="fw-medium text-dark">
+                    {{ app.created_at.strftime('%d.%m.%Y %H:%M') }}
+                </span>
+            </li>
+
+            <!-- 6. СТАТУС -->
+            <li class="list-group-item px-0 py-2 d-flex justify-content-between border-top">
+                <span class="fw-bold">Статус</span>
+                <span class="badge rounded-pill px-3 py-1
+                    {% if app.status == 'pending' %}bg-warning text-dark
+                    {% elif app.status == 'approved' %}bg-success text-white
+                    {% else %}bg-danger text-white{% endif %}">
+                    {{ gettext('status_' + app.status, lang) }}
+                </span>
+            </li>
+
+            <!-- 7. ПРИЧИНА ОТКАЗА — В СПИСКЕ, ПОСЛЕДНЯЯ СТРОКА -->
+            {% if app.status == 'rejected' and app.rejection_reason %}
+                <li class="list-group-item px-0 py-2 bg-danger-subtle text-danger small">
+                    <span class="fw-bold d-block mb-1">{{ gettext('rejection_reason', lang) }}:</span>
+                    <span>{{ app.rejection_reason }}</span>
+                </li>
+            {% endif %}
+
+        </ul>
+
+    </div>
+</div>
