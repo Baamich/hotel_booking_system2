@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         bsToast.show();
         setTimeout(() => {
             bsToast.hide();
-            toastDiv.remove(); // Удаляем элемент после скрытия
+            toastDiv.remove(); 
         }, 3000);
     }
 

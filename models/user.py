@@ -13,7 +13,7 @@ class User:
             'password': hashed_pw,
             'name': name,
             'admin': admin,
-            'moderator': moderator,  # Добавляем поле moderator
+            'moderator': moderator,  
             'bookings': [],
             'viewed_hotels': [],
             'created_at': datetime.datetime.utcnow()

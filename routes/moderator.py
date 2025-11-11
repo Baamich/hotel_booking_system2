@@ -49,7 +49,7 @@ def moderator_panel():
         app_data = {
             '_id': str(app['_id']),
             'user_id': str(app['user_id']),
-            'hotel_data': app.get('hotel_data', {}),  # Безопасное получение hotel_data
+            'hotel_data': app.get('hotel_data', {}), 
             'status': app.get('status', 'pending'),
             'rejection_reason': app.get('rejection_reason', None),
             'created_at': app.get('created_at', None),

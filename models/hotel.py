@@ -17,9 +17,9 @@ class Hotel:
             'reviews': data.get('reviews', []),
             'rooms': data.get('rooms', {'standard': {'available': True}, 'deluxe': {'available': True}}),
             'created_at': datetime.utcnow(),
-            'location_address': data.get('location_address'),  # Новый опциональный поля
-            'latitude': float(data.get('latitude')) if data.get('latitude') else None,  # Новый опциональный поля
-            'longitude': float(data.get('longitude')) if data.get('longitude') else None  # Новый опциональный поля
+            'location_address': data.get('location_address'),  
+            'latitude': float(data.get('latitude')) if data.get('latitude') else None,  
+            'longitude': float(data.get('longitude')) if data.get('longitude') else None  
         }
         result = db.hotels.insert_one(hotel)
         return str(result.inserted_id)

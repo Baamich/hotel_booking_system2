@@ -15,7 +15,7 @@ def register_socketio_events(socketio):
     def handle_connect():
         user_id = session.get('user_id')
         if not user_id:
-            return False  # Отключаем, если нет сессии
+            return False  
         return True
 
     @socketio.on('join')

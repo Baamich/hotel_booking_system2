@@ -29,7 +29,7 @@ def book_hotel(hotel_id):
     
     # Обновляем доступность отеля
     from models.hotel import Hotel
-    Hotel.update_availability(hotel_id, booking_data['room_type'], False)  # Уменьшаем доступность (упрощённо)
+    Hotel.update_availability(hotel_id, booking_data['room_type'], False)  
     
     flash('Бронь создана!')
     return redirect(url_for('auth.profile'))

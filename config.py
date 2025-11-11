@@ -11,4 +11,4 @@ class Config:
     SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.mailersend.net')
     SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
     EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', 'mssp.Dg2dUGv.pxkjn41rq20gz781.I7m3BT3')
-    GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyAh-pWiue5sxCqbGG5ujWu59D0XqanCkUU')  # Добавлен ключ
+    GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyAh-pWiue5sxCqbGG5ujWu59D0XqanCkUU')  

@@ -57,14 +57,14 @@ function initializeWebSocket(chatId) {
             adminName = null; // Сбрасываем имя админа на null
             const header = document.getElementById('support-header');
             if (header) {
-                header.textContent = 'Служба поддержки'; // Устанавливаем только "Служба поддержки"
+                header.textContent = 'Служба поддержки'; 
             }
             // Обновляем все сообщения, где отображается имя админа
             const messages = document.querySelectorAll('#chat-messages .mb-2');
             messages.forEach(msg => {
                 const strong = msg.querySelector('strong');
                 if (strong && strong.textContent !== userName) {
-                    strong.textContent = 'Служба поддержки'; // Возвращаем к умолчанию
+                    strong.textContent = 'Служба поддержки'; 
                 }
             });
         }

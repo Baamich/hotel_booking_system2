@@ -50,7 +50,7 @@ def register():
             flash(gettext('flash_error_prefix', lang) + error_msg)
             return render_template('register.html', lang=lang)
         
-        user_id = User.create_user(email, password, name)  # admin=False, moderator=False по умолчанию
+        user_id = User.create_user(email, password, name)  
         flash(gettext('flash_success', lang) + 'Регистрация успешна! Войдите в аккаунт.')
         return redirect(url_for('auth.login'))
     
@@ -106,7 +106,7 @@ def profile_history():
         return redirect(url_for('auth.login'))
     
     user_id = session['user_id']
-    viewed_hotels = User.get_viewed_hotels(user_id)  # Отсортировано по viewed_at
+    viewed_hotels = User.get_viewed_hotels(user_id)  
     viewed_hotels = [h for h in viewed_hotels if h]
     for hotel in viewed_hotels:
         if 'price_usd' not in hotel:

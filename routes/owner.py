@@ -26,7 +26,7 @@ def submit_hotel():
             'price_usd': float(request.form.get('price_usd', 0)),
             'category': request.form.get('category'),
             'description': request.form.get('description'),
-            'photos': request.form.getlist('photos'),  # Список URL или имен файлов
+            'photos': request.form.getlist('photos'), 
             'rooms': {
                 'single': {'available': int(request.form.get('single_rooms', 0))},
                 'double': {'available': int(request.form.get('double_rooms', 0))},

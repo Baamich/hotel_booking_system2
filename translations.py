@@ -120,7 +120,13 @@ TRANSLATIONS = {
         'location_coordinates': 'Координаты отеля',
         'latitude': 'Широта',
         'longitude': 'Долгота',
-        'example_coordinates': 'Пример: 47.0167 (широта), 28.8497 (долгота)'
+        'example_coordinates': 'Пример: 47.0167 (широта), 28.8497 (долгота)',
+        'max_10_photos': 'Максимум 10 фото',
+        'max_10_photos_hint': 'Выберите до 10 фотографий отеля',
+        'max_10_photos_alert': 'Вы можете загрузить не более 10 фотографий!',
+        'select_location_on_map': 'Выберите местоположение на карте',
+        'click_on_map_hint': 'Кликните по карте, чтобы поставить маркер',
+        'select_location_alert': 'Пожалуйста, выберите местоположение на карте!'
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -237,7 +243,13 @@ TRANSLATIONS = {
         'location_coordinates': 'Hotel coordinates',
         'latitude': 'Latitude',
         'longitude': 'Longitude',
-        'example_coordinates': 'Example: 47.0167 (latitude), 28.8497 (longitude)'
+        'example_coordinates': 'Example: 47.0167 (latitude), 28.8497 (longitude)',
+        'max_10_photos': 'Max 10 photos',
+        'max_10_photos_hint': 'Select up to 10 hotel photos',
+        'max_10_photos_alert': 'You can upload no more than 10 photos!',
+        'select_location_on_map': 'Select location on the map',
+        'click_on_map_hint': 'Click on the map to place a marker',
+        'select_location_alert': 'Please select a location on the map!'
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -354,7 +366,13 @@ TRANSLATIONS = {
         'location_coordinates': 'Coordonate hotel',
         'latitude': 'Latitudine',
         'longitude': 'Longitudine',
-        'example_coordinates': 'Exemplu: 47.0167 (latitudine), 28.8497 (longitudine)'
+        'example_coordinates': 'Exemplu: 47.0167 (latitudine), 28.8497 (longitudine)',
+        'max_10_photos': 'Maxim 10 poze',
+        'max_10_photos_hint': 'Selectați până la 10 fotografii ale hotelului',
+        'max_10_photos_alert': 'Puteți încărca maximum 10 fotografii!',
+        'select_location_on_map': 'Selectați locația pe hartă',
+        'click_on_map_hint': 'Faceți clic pe hartă pentru a plasa un marker',
+        'select_location_alert': 'Vă rugăm să selectați o locație pe hartă!'
     }
 }
 
