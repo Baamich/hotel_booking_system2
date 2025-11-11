@@ -93,7 +93,7 @@ def profile():
     bookings = User.get_user_bookings(user_id)
     applications = HotelApplication.get_user_applications(user_id)
     
-    # НИКАКИХ ФИЛЬТРОВ ПО УМОЛЧАНИЮ!
+    # НИКАКИХ ФИЛЬТРОВ ПО УМОЛЧАНИЮ — ВСЁ!
     status_filter = request.args.get('status')  # Только если в URL
     from_date = request.args.get('from_date')
     to_date = request.args.get('to_date')
@@ -107,10 +107,14 @@ def profile():
 
     applications = sorted(applications, key=lambda x: x['created_at'], reverse=True)
 
+    # ЯВНО ПЕРЕДАЁМ: по умолчанию "all"
     return render_template('profile.html', 
                           user=session, 
                           bookings=bookings, 
                           applications=applications,
+                          status_filter='all',  # ← ВАЖНО!
+                          from_date=from_date or '',
+                          to_date=to_date or '',
                           lang=lang)
 
 @auth_bp.route('/profile/history')
