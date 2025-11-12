@@ -2,7 +2,12 @@
 
 {% block title %}{{ gettext('search_title', lang) }}{% endblock %}
 
+<head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ai_chat.css') }}">
+</head>
+
 {% block content %}
+<!-- Фильтры и отели (без изменений) -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="dropdown">
         <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -82,51 +87,70 @@
     {% endfor %}
 </div>
 
-<!-- ====================== ДАННЫЕ ДЛЯ JS ====================== -->
+<!-- ДАННЫЕ ДЛЯ JS -->
 <script>
-    // Передаём все отели клиенту в безопасном виде
     window.hotelsData = {{ hotels|tojson }};
 </script>
 
-<!-- ====================== LIGHTBOX ====================== -->
+<!-- LIGHTBOX -->
 <div id="photo-lightbox" class="lightbox">
     <span class="close">&times;</span>
     <div class="lightbox-content">
         <div class="lightbox-main">
-            <button class="nav-btn prev">&#10094;</button>
+            <button class="nav-btn prev">Previous</button>
             <img id="lightbox-img" src="" alt="">
-            <button class="nav-btn next">&#10095;</button>
+            <button class="nav-btn next">Next</button>
         </div>
         <div id="lightbox-thumbs" class="lightbox-thumbs"></div>
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<!-- ЧАТ-БОТ ИИ -->
+<div id="ai-chat-widget">
+        <button id="ai-chat-toggle" class="ai-chat-toggle" title="ИИ-помощник">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="white" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+    </button>
 
+    <!-- Окошко чата -->
+    <div id="ai-chat-box" class="ai-chat-box">
+        <div class="ai-chat-header">
+            <span>ИИ-помощник</span>
+            <button id="ai-chat-close" class="btn-close btn-close-white"></button>
+        </div>
+        <div id="ai-chat-messages" class="ai-chat-messages"></div>
+        <div class="ai-chat-input-container">
+            <input type="text" id="ai-chat-input" placeholder="Напишите сообщение..." autocomplete="off">
+            <button id="ai-chat-send" class="send-btn">
+                Checkmark
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ai_chat.js') }}"></script>
+
+<!-- LIGHTBOX JS -->
 <script>
-    /* ---------- Открытие галереи по клику на карточку ---------- */
     document.querySelectorAll('.hotel-card').forEach(card => {
         card.addEventListener('click', function (e) {
-            // Не открывать, если кликнули по кнопке "Details"
             if (e.target.closest('a')) return;
-
             const hotelId = this.dataset.hotelId;
             const hotel = window.hotelsData.find(h => h._id === hotelId);
             if (!hotel || !hotel.photos || hotel.photos.length === 0) return;
-
-            const startIdx = 0; // всегда открываем с первой фотографии
-            openLightbox(hotel.photos, startIdx);
+            openLightbox(hotel.photos, 0);
         });
     });
 
-    /* ---------- Функция галереи ---------- */
     function openLightbox(photos, startIndex) {
         const lightbox = document.getElementById('photo-lightbox');
         const mainImg = document.getElementById('lightbox-img');
         const thumbsContainer = document.getElementById('lightbox-thumbs');
         let currentIndex = startIndex;
 
-        // ----- миниатюры -----
         thumbsContainer.innerHTML = '';
         photos.forEach((photo, i) => {
             const thumb = document.createElement('img');
@@ -149,7 +173,6 @@
 
         updateMainImage();
 
-        // ----- стрелки -----
         document.querySelector('.prev').onclick = () => {
             currentIndex = (currentIndex - 1 + photos.length) % photos.length;
             updateMainImage();
@@ -159,23 +182,15 @@
             updateMainImage();
         };
 
-        // ----- скрыть/показать миниатюры -----
         let thumbsVisible = true;
         mainImg.onclick = () => {
             thumbsVisible = !thumbsVisible;
             thumbsContainer.style.display = thumbsVisible ? 'flex' : 'none';
         };
 
-        // ----- закрытие -----
         lightbox.style.display = 'flex';
-        document.querySelector('.close').onclick = closeLightbox;
-        lightbox.onclick = (e) => {
-            if (e.target === lightbox) closeLightbox();
-        };
-
-        function closeLightbox() {
-            lightbox.style.display = 'none';
-        }
+        document.querySelector('.close').onclick = () => lightbox.style.display = 'none';
+        lightbox.onclick = (e) => { if (e.target === lightbox) lightbox.style.display = 'none'; };
     }
 </script>
 {% endblock %}

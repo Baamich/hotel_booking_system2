@@ -1,4 +1,4 @@
-from flask import Flask, session, render_template, redirect, url_for
+from flask import Flask, session, render_template, redirect, url_for, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from config import Config
@@ -13,14 +13,14 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)
+CORS(app, supports_credentials=True)  # ВАЖНО: для передачи сессии
 socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:5000")
 
 # Добавляем gettext как глобальную функцию для Jinja2
 app.jinja_env.globals['gettext'] = gettext
 
 # Новые globals для флагов, символов валюты и класса User
-app.jinja_env.globals['FLAGS'] = {'rus': '🇷🇺', 'eng': '🇺🇸', 'rom': '🇷🇴'}
+app.jinja_env.globals['FLAGS'] = {'rus': 'RU', 'eng': 'US', 'rom': 'RO'}
 app.jinja_env.globals['get_symbol'] = get_symbol
 app.jinja_env.globals['User'] = User
 
@@ -49,7 +49,15 @@ register_socketio_events(socketio)
 @app.route('/')
 def index():
     lang = session.get('lang', 'eng')
-    return redirect(url_for('search.search_hotels'))  
+    return redirect(url_for('search.search_hotels'))
+
+# === НОВЫЙ ЭНДПОИНТ ДЛЯ ПЕРЕДАЧИ ДАННЫХ В ЧАТ-БОТ ===
+@app.route('/ai/session')
+def ai_session():
+    return {
+        'lang': session.get('lang', 'eng'),
+        'currency': session.get('currency', 'usd')
+    }
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)
