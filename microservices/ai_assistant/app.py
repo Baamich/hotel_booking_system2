@@ -1,29 +1,28 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # <--- НОВОЕ
+from flask_cors import CORS
 import sys
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# === ДОБАВЛЯЕМ КОРЕНЬ ПРОЕКТА ===
+current_dir = os.path.dirname(os.path.abspath(__file__))
+microservices_dir = os.path.dirname(current_dir)
+project_root = os.path.dirname(microservices_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+print(f"[APP] Путь к корню: {project_root}")
 
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
-
+# === ИМПОРТИРУЕМ process_message И gettext ===
 from chat_service import process_message
+from translations import gettext  # <-- ГЛОБАЛЬНЫЙ gettext
 
 app = Flask(__name__)
-CORS(app)  # <--- ВКЛЮЧАЕМ CORS ДЛЯ ВСЕХ
-
-def bot_gettext(key, lang='eng'):
-    try:
-        from translations import TRANSLATIONS
-        return TRANSLATIONS.get(lang, TRANSLATIONS['eng']).get(key, key)
-    except:
-        return key
+CORS(app)
 
 @app.route('/chat', methods=['OPTIONS', 'POST'])
 def chat():
-    # === ОБРАБОТКА OPTIONS (CORS preflight) ===
+    # === CORS preflight ===
     if request.method == 'OPTIONS':
         return '', 200
 
@@ -36,14 +35,15 @@ def chat():
         return jsonify({'reply': 'pong'}), 200
 
     if not user_message:
-        return jsonify({'reply': 'Напишите сообщение...'}), 200
+        return jsonify({'reply': gettext('type_message', lang)}), 200
 
     try:
-        reply = process_message(user_message, lang, bot_gettext)
+        # ПЕРЕДАЁМ ТОЛЬКО message и lang
+        reply = process_message(user_message, lang)
         return jsonify({'reply': reply}), 200
     except Exception as e:
         print(f"[AI ERROR] {e}")
-        return jsonify({'reply': 'Ошибка. Попробуйте позже.'}), 500
+        return jsonify({'reply': gettext('flash_error', lang)}), 500
 
 if __name__ == '__main__':
     print("ИИ-помощник запущен: http://localhost:5001")

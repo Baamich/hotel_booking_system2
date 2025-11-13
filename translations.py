@@ -137,7 +137,46 @@ TRANSLATIONS = {
         'apply_filters': 'Применить',
         'show_filters': 'Фильтры',
         'clear_filters': 'Сброс',
-        'no_applications_filtered': 'Нет заявок по выбранным фильтрам.'
+        'no_applications_filtered': 'Нет заявок по выбранным фильтрам.',
+        'lang_not_supported': 'Я не понимаю этот язык.',
+        'lang_please_use': 'Пожалуйста, пишите на одном из доступных языков:',
+        'lang_change_hint': 'Вы можете сменить язык в шапке сайта.',
+        'lang_name_rus': 'Русский',
+        'lang_name_eng': 'English',
+        'lang_name_rom': 'Română',
+
+        'greeting': 'Здравствуйте, я текстовый ИИ-помощник, чем вам помочь?',
+        'greeting_hint': 'Введите <strong>сводка</strong>, чтобы увидеть примеры запросов.',
+
+        'support_contact': 'Связаться с поддержкой:',
+        'support_link': 'Перейти в чаты поддержки',
+
+        'currency_not_found': 'Не найдено такой валюты.',
+        'currency_available': 'Доступные: <code>$</code>, <code>€</code>, <code>лей</code>, <code>грн</code>, <code>руб</code>, <code>mdl</code>, <code>ron</code>',
+
+        'hotels_found': 'Найдено отелей',
+        'no_hotels_found': 'Не нашёл отелей.',
+        'check_spelling': 'Проверьте правильность написания.',
+        'go_to_hotel': 'Перейти к отелю',
+        'top_reviews': 'Топ-отзывы',
+        'anonymous': 'Аноним',
+
+        'not_understood': 'Не понял.',
+        'examples': 'покажу примеры',
+        'examples_title': 'Примеры запросов',
+        'examples_hint': 'Пиши как угодно — я пойму опечатки!',
+
+        'example_find_30usd': 'найди отели до 30$',
+        'example_find_50eur': 'отели до 50 евро',
+        'example_find_1000lei': 'отели до 1000 лей',
+        'example_budget_500uah': 'бюджетные отели до 500 гривен',
+        'example_find_2000rub': 'отели до 2000 рублей',
+        'example_cheap_20mdl': 'дешевые отели до 20 mdl',
+        'example_stars_1_2': 'отели 1-2 звезды',
+        'example_city_chisinau': 'в Кишинёве до 50$',
+        'example_good_reviews': 'отели с хорошими отзывами',
+        'example_no_reviews': 'отели без отзывов',
+        'example_support': 'поддержка',
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -271,7 +310,46 @@ TRANSLATIONS = {
         'apply_filters': 'Apply',
         'show_filters': 'Filters',
         'clear_filters': 'Clear',
-        'no_applications_filtered': 'No applications match the selected filters.'
+        'no_applications_filtered': 'No applications match the selected filters.',
+        'lang_not_supported': 'I don\'t understand this language.',
+        'lang_please_use': 'Please write in one of the available languages:',
+        'lang_change_hint': 'You can change the language in the site header.',
+        'lang_name_rus': 'Russian',
+        'lang_name_eng': 'English',
+        'lang_name_rom': 'Română',
+
+        'greeting': 'Hello, I am a text AI assistant, how can I help you?',
+        'greeting_hint': 'Type <strong>summary</strong> to see examples of requests.',
+
+        'support_contact': 'Contact support:',
+        'support_link': 'Go to support chats',
+
+        'currency_not_found': 'Currency not found.',
+        'currency_available': 'Available: <code>$</code>, <code>€</code>, <code>lei</code>, <code>uah</code>, <code>rub</code>, <code>mdl</code>, <code>ron</code>',
+
+        'hotels_found': 'Found hotels',
+        'no_hotels_found': 'No hotels found.',
+        'check_spelling': 'Check the spelling.',
+        'go_to_hotel': 'Go to hotel',
+        'top_reviews': 'Top reviews',
+        'anonymous': 'Anonymous',
+
+        'not_understood': 'I didn\'t understand.',
+        'examples': 'show examples',
+        'examples_title': 'Example queries',
+        'examples_hint': 'Write however you want — I\'ll understand typos!',
+
+        'example_find_30usd': 'find hotels up to 30$',
+        'example_find_50eur': 'hotels up to 50 euros',
+        'example_find_1000lei': 'hotels up to 1000 lei',
+        'example_budget_500uah': 'budget hotels up to 500 uah',
+        'example_find_2000rub': 'hotels up to 2000 rub',
+        'example_cheap_20mdl': 'cheap hotels up to 20 mdl',
+        'example_stars_1_2': 'hotels 1-2 stars',
+        'example_city_chisinau': 'in Chisinau up to 50$',
+        'example_good_reviews': 'hotels with good reviews',
+        'example_no_reviews': 'hotels without reviews',
+        'example_support': 'support',
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -405,7 +483,46 @@ TRANSLATIONS = {
         'apply_filters': 'Aplică',
         'show_filters': 'Filtre',
         'clear_filters': 'Resetează',
-        'no_applications_filtered': 'Nu există cereri care să corespundă filtrelor selectate.'
+        'no_applications_filtered': 'Nu există cereri care să corespundă filtrelor selectate.',
+        'lang_not_supported': 'Nu înțeleg această limbă.',
+        'lang_please_use': 'Vă rugăm să scrieți într-una din limbile disponibile:',
+        'lang_change_hint': 'Puteți schimba limba în antetul site-ului.',
+        'lang_name_rus': 'Rusă',
+        'lang_name_eng': 'Engleză',
+        'lang_name_rom': 'Română',
+
+        'greeting': 'Bună, sunt un asistent AI textual, cu ce vă pot ajuta?',
+        'greeting_hint': 'Scrieți <strong>rezumat</strong> pentru a vedea exemple de cereri.',
+
+        'support_contact': 'Contactați suportul:',
+        'support_link': 'Mergeți la chat-urile de suport',
+
+        'currency_not_found': 'Monedă negăsită.',
+        'currency_available': 'Disponibile: <code>$</code>, <code>€</code>, <code>lei</code>, <code>uah</code>, <code>rub</code>, <code>mdl</code>, <code>ron</code>',
+
+        'hotels_found': 'Hoteluri găsite',
+        'no_hotels_found': 'Nu am găsit hoteluri.',
+        'check_spelling': 'Verificați ortografia.',
+        'go_to_hotel': 'Mergeți la hotel',
+        'top_reviews': 'Recenzii de top',
+        'anonymous': 'Anonim',
+
+        'not_understood': 'Nu am înțeles.',
+        'examples': 'arăt exemple',
+        'examples_title': 'Exemple de cereri',
+        'examples_hint': 'Scrieți cum doriți — voi înțelege greșelile de scriere!',
+
+        'example_find_30usd': 'găsește hoteluri până la 30$',
+        'example_find_50eur': 'hoteluri până la 50 euro',
+        'example_find_1000lei': 'hoteluri până la 1000 lei',
+        'example_budget_500uah': 'hoteluri buget până la 500 uah',
+        'example_find_2000rub': 'hoteluri până la 2000 rub',
+        'example_cheap_20mdl': 'hoteluri ieftine până la 20 mdl',
+        'example_stars_1_2': 'hoteluri 1-2 stele',
+        'example_city_chisinau': 'în Chișinău până la 50$',
+        'example_good_reviews': 'hoteluri cu recenzii bune',
+        'example_no_reviews': 'hoteluri fără recenzii',
+        'example_support': 'suport',
     }
 }
 
