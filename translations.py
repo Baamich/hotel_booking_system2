@@ -177,6 +177,12 @@ TRANSLATIONS = {
         'example_good_reviews': 'отели с хорошими отзывами',
         'example_no_reviews': 'отели без отзывов',
         'example_support': 'поддержка',
+        'status_label': 'Статус',
+        'hotel_name_label': 'Название',
+        'choose_files': 'Выбрать файлы',
+        'city_hint': 'Начните вводить город — появятся варианты на английском',
+        'start_typing_city': 'Начните вводить город...',
+        'imported_from_google': 'Импортировано из Google Places',
     },
     'eng': {
         'title': 'Hotel Booking System',
@@ -350,6 +356,12 @@ TRANSLATIONS = {
         'example_good_reviews': 'hotels with good reviews',
         'example_no_reviews': 'hotels without reviews',
         'example_support': 'support',
+        'status_label': 'Status',
+        'hotel_name_label': 'Name',
+        'choose_files': 'Choose files',
+        'city_hint': 'Start typing a city — suggestions in English will appear',
+        'start_typing_city': 'Start typing a city...',
+        'imported_from_google': 'Imported from Google Places',
     },
     'rom': {
         'title': 'Sistem de rezervare hoteluri',
@@ -523,6 +535,12 @@ TRANSLATIONS = {
         'example_good_reviews': 'hoteluri cu recenzii bune',
         'example_no_reviews': 'hoteluri fără recenzii',
         'example_support': 'suport',
+        'status_label': 'Status',
+        'hotel_name_label': 'Nume',
+        'choose_files': 'Alegeți fișiere',
+        'city_hint': 'Începeți să tastați un oraș — vor apărea sugestii în engleză',
+        'start_typing_city': 'Începeți să tastați un oraș...',
+        'imported_from_google': 'Importat din Google Places',
     }
 }
 

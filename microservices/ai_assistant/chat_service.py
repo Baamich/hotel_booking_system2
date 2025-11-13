@@ -254,22 +254,22 @@ def process_message(message, lang='eng'):
             f"{gettext('support_link', response_lang)}</a>"
         )
 
-    # === ПОИСК ОТЕЛЕЙ ===
+        # === ПОИСК ОТЕЛЕЙ ===
     if any(w in message_lower for w in ['отель', 'отели', 'hotel', 'найди', 'ищу', 'покажи', 'гостиница', 'cauta', 'hoteluri']):
         min_price = max_price = min_stars = max_stars = None
         city = None
-        currency = 'usd'
+        currency = 'usd'  # ← ВСЕГДА ДОЛЛАР ПО УМОЛЧАНИЮ
         good_reviews = any(w in message_lower for w in ['хорошие', 'отличные', 'высокий', 'good', 'best', 'лучшие', 'bune', 'excelente'])
         no_reviews = any(w in message_lower for w in ['без отзывов', 'без комментариев', 'без рейтинга', 'fara recenzii'])
 
-        # === ВАЛЮТА ===
+        # === ВАЛЮТА: только если явно указана ===
         detected_currency = None
         for form, cur in CURRENCY_FORMS.items():
             if form in message_lower or form in message:
                 detected_currency = cur
                 break
         if detected_currency:
-            currency = detected_currency
+            currency = detected_currency  # переопределяем только если указали
 
         # === ЦЕНА + ВАЛЮТА ===
         price_pattern = r'(до|от|pana la|de la)\s+([0-9.,]+)\s*([а-яё\w$€₴₽ăîșțâ]+)?'
@@ -324,7 +324,7 @@ def process_message(message, lang='eng'):
         if hotels:
             conv_text = ""
             price_used = max_price or min_price
-            if price_used:
+            if price_used and currency != 'usd':
                 usd_eq = convert_price(price_used, currency, 'usd')
                 conv_text = f" ({price_used} {get_symbol(currency)} → {usd_eq:.2f} $)"
 
@@ -345,9 +345,10 @@ def process_message(message, lang='eng'):
                     f"  {reviews}<br>"
                 )
 
+                # === ОТЗЫВЫ: ПОКАЗЫВАТЬ У ВСЕХ С ОТЗЫВАМИ ===
                 if h.get('top_reviews'):
                     review_lines = "<br>".join([
-                        f"  — {r.get('user', gettext('anonymous', response_lang))}: {r.get('text', '')} ({r.get('rating', 0)}★)"
+                        f"  — {r.get('user', gettext('anonymous', response_lang))}: {r.get('text', '')} ({r.get('rating', 0)} stars)"
                         for r in h['top_reviews']
                     ])
                     lines.append(f"  <em>{gettext('top_reviews', response_lang)}:</em><br>{review_lines}<br>")

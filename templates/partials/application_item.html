@@ -6,7 +6,7 @@
 
             <!-- 1. НАЗВАНИЕ ОТЕЛЯ -->
             <li class="list-group-item px-0 py-2 d-flex justify-content-between border-bottom">
-                <span class="fw-bold text-primary">Название</span>
+                <span class="fw-bold text-primary">{{ gettext('hotel_name_label', lang) }}</span>
                 <span class="fw-bold text-dark">{{ app.hotel_data.get('name', 'Без названия') }}</span>
             </li>
 
@@ -40,7 +40,7 @@
 
             <!-- 6. СТАТУС -->
             <li class="list-group-item px-0 py-2 d-flex justify-content-between border-top">
-                <span class="fw-bold">Статус</span>
+                <span class="fw-bold">{{ gettext('status_label', lang) }}</span>
                 <span class="badge rounded-pill px-3 py-1
                     {% if app.status == 'pending' %}bg-warning text-dark
                     {% elif app.status == 'approved' %}bg-success text-white

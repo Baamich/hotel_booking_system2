@@ -85,6 +85,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggleBtn.style.display = 'none';
         chatBox.style.display = 'flex';
         await checkAI();
+
+        // === ПЕРЕВОД ШАПКИ ===
+        const headerText = document.getElementById('ai-header-text');
+        if (headerText) {
+            const translations = {
+                rus: 'ИИ-помощник',
+                eng: 'AI Assistant',
+                rom: 'Asistent AI'
+            };
+            headerText.textContent = translations[lang] || 'AI Assistant';
+        }
     });
 
     closeBtn.addEventListener('click', () => {

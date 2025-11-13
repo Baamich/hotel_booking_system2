@@ -11,10 +11,15 @@
                 <label class="form-label">{{ gettext('hotel_name', lang) }}</label>
                 <input type="text" class="form-control" name="name" required>
             </div>
-            <div class="mb-3">
+
+            <!-- === ГОРОД С АВТОДОПОЛНЕНИЕМ === -->
+            <div class="mb-3 position-relative">
                 <label class="form-label">{{ gettext('city', lang) }}</label>
-                <input type="text" class="form-control" name="city" required>
+                <input type="text" class="form-control" id="city-input" name="city" required autocomplete="off" placeholder="{{ gettext('start_typing_city', lang) }}">
+                <div id="city-suggestions" class="dropdown-menu p-0" style="display: none; max-height: 250px; overflow-y: auto;"></div>
+                <small class="form-text text-muted">{{ gettext('city_hint', lang) }}</small>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">{{ gettext('price_usd', lang) }}</label>
                 <input type="number" class="form-control" name="price_usd" step="0.01" required>
@@ -33,9 +38,23 @@
                 <label class="form-label">{{ gettext('description', lang) }}</label>
                 <textarea class="form-control" name="description" rows="5" required></textarea>
             </div>
+
+            <!-- === 10 КВАДРАТОВ ДЛЯ ФОТО — ОТПРАВЛЯЮТСЯ КАК photos[] === -->
             <div class="mb-3">
                 <label class="form-label">{{ gettext('photos', lang) }} ({{ gettext('max_10_photos', lang) }})</label>
-                <input type="file" class="form-control" name="photos" multiple accept="image/*" id="photo-input">
+                <div class="photo-grid">
+                    {% for i in range(1, 11) %}
+                    <div class="photo-slot" data-index="{{ i-1 }}">
+                        <!-- КЛЮЧЕВОЕ: name="photos" — массив! -->
+                        <input type="file" class="photo-input d-none" name="photos" accept="image/*">
+                        <div class="photo-placeholder">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <img class="photo-preview d-none" alt="Preview {{ i }}">
+                        <button type="button" class="btn-close photo-remove d-none" aria-label="Remove"></button>
+                    </div>
+                    {% endfor %}
+                </div>
                 <small class="form-text text-muted">{{ gettext('max_10_photos_hint', lang) }}</small>
             </div>
 
@@ -64,7 +83,6 @@
 </div>
 
 <!-- Google Maps API -->
-<!-- Google Maps API + двусторонняя синхронизация (адрес ↔ карта) -->
 <script>
     let map, marker, geocoder, autocomplete;
 
@@ -78,7 +96,6 @@
         geocoder = new google.maps.Geocoder();
         marker = null;
 
-        // === Автокомплит адреса ===
         const input = document.getElementById("location-address");
         autocomplete = new google.maps.places.Autocomplete(input, {
             fields: ["formatted_address", "geometry"],
@@ -97,12 +114,9 @@
             placeMarker(place.geometry.location);
             document.getElementById("latitude").value = place.geometry.location.lat();
             document.getElementById("longitude").value = place.geometry.location.lng();
-
-            // Заполняем адрес (человеческий)
             document.getElementById("location-address").value = place.formatted_address;
         });
 
-        // === Клик по карте → обратный геокодинг (координаты → адрес) ===
         map.addListener("click", (e) => {
             const latLng = e.latLng;
 
@@ -110,11 +124,9 @@
             document.getElementById("latitude").value = latLng.lat();
             document.getElementById("longitude").value = latLng.lng();
 
-            // Обратный геокодинг: координаты → адрес
             geocoder.geocode({ location: latLng }, (results, status) => {
                 if (status === "OK" && results[0]) {
-                    const address = results[0].formatted_address;
-                    document.getElementById("location-address").value = address;
+                    document.getElementById("location-address").value = results[0].formatted_address;
                 } else {
                     document.getElementById("location-address").value = `Lat: ${latLng.lat().toFixed(6)}, Lng: ${latLng.lng().toFixed(6)}`;
                 }
@@ -130,7 +142,6 @@
             draggable: true,
         });
 
-        // При перетаскивании — обновляем адрес
         marker.addListener("dragend", () => {
             const pos = marker.getPosition();
             document.getElementById("latitude").value = pos.lat();
@@ -145,27 +156,139 @@
     }
 </script>
 
-<!-- Загрузка Google Maps API -->
 <script async defer
     src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initMap">
 </script>
 
-<!-- Валидация формы -->
+<!-- === АВТОДОПОЛНЕНИЕ ГОРОДОВ === -->
 <script>
-    document.getElementById('owner-form').addEventListener('submit', function(e) {
-        const files = document.getElementById('photo-input').files;
-        if (files.length > 10) {
-            e.preventDefault();
-            alert('{{ gettext("max_10_photos_alert", lang) }}');
-            return;
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        const cityInput = document.getElementById('city-input');
+        const suggestionsBox = document.getElementById('city-suggestions');
+        let debounceTimer;
 
-        const lat = document.getElementById('latitude').value;
-        const lng = document.getElementById('longitude').value;
-        if (!lat || !lng) {
-            e.preventDefault();
-            alert('{{ gettext("select_location_alert", lang) }}');
-        }
+        cityInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&limit=8&type=city&apiKey=eb87d5970add4aad9e8704df77cb8d3d`)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestionsBox.innerHTML = '';
+
+                        if (!data.features || data.features.length === 0) {
+                            suggestionsBox.style.display = 'none';
+                            return;
+                        }
+
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            const cityName = props.city || props.name || props.formatted.split(',')[0].trim();
+                            const country = props.country || '';
+
+                            const item = document.createElement('a');
+                            item.className = 'dropdown-item py-2 px-3';
+                            item.href = '#';
+                            item.innerHTML = `<strong>${cityName}</strong><small class="text-muted d-block">${country}</small>`;
+                            item.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                cityInput.value = cityName;
+                                suggestionsBox.style.display = 'none';
+                            });
+                            suggestionsBox.appendChild(item);
+                        });
+
+                        suggestionsBox.style.display = 'block';
+                    })
+                    .catch(err => {
+                        console.error('Geoapify error:', err);
+                        suggestionsBox.style.display = 'none';
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!cityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        cityInput.addEventListener('focus', () => {
+            if (cityInput.value.length >= 2) {
+                cityInput.dispatchEvent(new Event('input'));
+            }
+        });
+    });
+</script>
+
+<!-- === ФОТОГАЛЕРЕЯ — ОТПРАВКА photos[] === -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const photoInputs = document.querySelectorAll('.photo-input');
+        const maxPhotos = 10;
+
+        photoInputs.forEach(input => {
+            const slot = input.closest('.photo-slot');
+            const preview = slot.querySelector('.photo-preview');
+            const placeholder = slot.querySelector('.photo-placeholder');
+            const removeBtn = slot.querySelector('.photo-remove');
+
+            // Клик по слоту
+            slot.addEventListener('click', (e) => {
+                if (!e.target.closest('.photo-remove')) {
+                    input.click();
+                }
+            });
+
+            // Загрузка
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    placeholder.classList.add('d-none');
+                    removeBtn.classList.remove('d-none');
+                    slot.style.border = '2px solid #0d6efd';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Удаление
+            removeBtn.addEventListener('click', () => {
+                input.value = '';
+                preview.src = '';
+                preview.classList.add('d-none');
+                placeholder.classList.remove('d-none');
+                removeBtn.classList.add('d-none');
+                slot.style.border = '2px dashed #ced4da';
+            });
+        });
+
+        // Валидация
+        document.getElementById('owner-form').addEventListener('submit', function(e) {
+            const files = Array.from(photoInputs).filter(i => i.files.length > 0);
+            if (files.length > maxPhotos) {
+                e.preventDefault();
+                alert('{{ gettext("max_10_photos_alert", lang) }}');
+                return;
+            }
+
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            if (!lat || !lng) {
+                e.preventDefault();
+                alert('{{ gettext("select_location_alert", lang) }}');
+            }
+        });
     });
 </script>
 {% endblock %}

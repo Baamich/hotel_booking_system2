@@ -7,52 +7,45 @@
     <div class="col-md-8">
         <h2>{{ hotel.name }}</h2>
         <p><strong>{{ gettext('description', lang) }}:</strong> {{ hotel.description }}</p>
-        <hr class="border-dark my-4">  <!-- Чёрная полоска -->
+        <hr class="border-dark my-4">
         <p class="price-per-night" data-price-usd="{{ hotel.price_usd }}"><strong>{{ gettext('per_night', lang) }} {{ hotel.display_price }} {{ currency_symbol }}</strong></p>
         
+        <!-- ==================== ФОТО ОТЕЛЯ ==================== -->
         <h4>{{ gettext('photos', lang) }}</h4>
-        <div class="row">
-            {% for photo in hotel.photos %}
-                <div class="col-md-4">
-                    <img src="data:image/jpeg;base64,{{ photo }}" class="img-fluid mb-3" alt="Hotel Photo">
-                </div>
-            {% endfor %}
-            {% if not hotel.photos %}
-                <p>{{ gettext('no_photos', lang) }}</p>
-            {% endif %}
-        </div>
-        
-        <h4>{{ gettext('map', lang) }}</h4>
-        <!-- Google Maps iframe с координатами или адресом -->
-        {% if hotel.latitude and hotel.longitude %}
-            <iframe 
-                width="100%" 
-                height="400" 
-                frameborder="0" 
-                style="border:0" 
-                src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.latitude }},{{ hotel.longitude }}" 
-                allowfullscreen>
-            </iframe>
-        {% elif hotel.location_address %}
-            <iframe 
-                width="100%" 
-                height="400" 
-                frameborder="0" 
-                style="border:0" 
-                src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.location_address|urlencode }}" 
-                allowfullscreen>
-            </iframe>
+
+        {% if hotel.photos and hotel.photos|length > 0 %}
+            <div class="row hotel-photos-gallery">
+                {% for photo in hotel.photos %}
+                    <div class="col-6 col-md-4 mb-3">
+                        <img src="data:image/jpeg;base64,{{ photo }}"
+                             class="img-fluid rounded hotel-photo-thumb"
+                             style="height: 180px; width: 100%; object-fit: cover; cursor: pointer;"
+                             data-photo-index="{{ loop.index0 }}"
+                             alt="{{ hotel.name }} photo">
+                    </div>
+                {% endfor %}
+            </div>
         {% else %}
-            <iframe 
-                width="100%" 
-                height="400" 
-                frameborder="0" 
-                style="border:0" 
-                src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.city }}" 
-                allowfullscreen>
-            </iframe>
+            <p>{{ gettext('no_photos', lang) }}</p>
         {% endif %}
 
+        <!-- ==================== КАРТА ==================== -->
+        <h4>{{ gettext('map', lang) }}</h4>
+        {% if hotel.latitude and hotel.longitude %}
+            <iframe width="100%" height="400" frameborder="0" style="border:0"
+                    src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.latitude }},{{ hotel.longitude }}"
+                    allowfullscreen></iframe>
+        {% elif hotel.location_address %}
+            <iframe width="100%" height="400" frameborder="0" style="border:0"
+                    src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.location_address|urlencode }}"
+                    allowfullscreen></iframe>
+        {% else %}
+            <iframe width="100%" height="400" frameborder="0" style="border:0"
+                    src="https://www.google.com/maps/embed/v1/place?key={{ config.GOOGLE_MAPS_API_KEY }}&q={{ hotel.city }}"
+                    allowfullscreen></iframe>
+        {% endif %}
+
+        <!-- ==================== ДОБАВИТЬ ОТЗЫВ ==================== -->
         <h4>{{ gettext('add_review', lang) }}</h4>
         {% if 'user_id' in session %}
             <form method="POST" action="{{ url_for('search.add_review', hotel_id=hotel._id) }}" enctype="multipart/form-data">
@@ -71,45 +64,96 @@
             <p>{{ gettext('login_to_review', lang) }}</p>
         {% endif %}
         
+        <!-- ==================== ОТЗЫВЫ ==================== -->
         <h4>{{ gettext('reviews', lang) }}</h4>
         <ul class="list-group">
             {% set visible_reviews = hotel.reviews[:3] %}
             {% for review in visible_reviews %}
                 <li class="list-group-item">
-                    <strong>{{ review.user }}:</strong> 
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>{{ review.user }}</strong>
+                            {% if review.source == 'google' %}
+                                <span class="badge bg-secondary ms-2">{{ gettext('imported_from_google', lang) }}</span>
+                            {% endif %}
+                            <span class="text-muted small ms-2">{{ review.date|default("") }}</span>
+                        </div>
+                        <div class="text-warning">
+                            {% for i in range(review.rating|int) %}
+                                <i class="bi bi-star-fill"></i>
+                            {% endfor %}
+                            {% for i in range(5 - (review.rating|int)) %}
+                                <i class="bi bi-star"></i>
+                            {% endfor %}
+                            <span class="ms-2 small">{{ review.rating }}/5</span>
+                        </div>
+                    </div>
+
                     <div class="mt-2">
-                        <p>{{ review.text }}</p>
-                        {% if review.photos %}
-                            <div class="row">
+                        <p class="mb-1">{{ review.text }}</p>
+
+                        {% if review.photos and review.photos|length > 0 %}
+                            <div class="row mt-2">
                                 {% for p in review.photos %}
-                                    <div class="col-md-6">
-                                        <img src="{{ url_for('static', filename='uploads/' + p) }}" class="img-fluid mb-2" alt="Review Photo" style="max-width: 150px;">
+                                    <div class="col-6 col-md-4 mb-2">
+                                        <img src="data:image/jpeg;base64,{{ p }}"
+                                             class="img-fluid rounded review-photo-thumb"
+                                             style="height: 100px; width: 100%; object-fit: cover; cursor: pointer;"
+                                             data-photo-index="{{ loop.index0 }}"
+                                             data-photos='{{ review.photos|tojson }}'
+                                             alt="Review photo">
                                     </div>
                                 {% endfor %}
                             </div>
                         {% endif %}
                     </div>
-                    <p class="text-end mt-2 mb-0">{{ gettext('rating', lang) }}: {{ review.rating }}/5 ⭐</p>
                 </li>
             {% endfor %}
+
             {% if hotel.reviews|length > 3 %}
                 <li class="list-group-item">
-                    <button onclick="toggleAllReviews()" class="btn btn-outline-primary">{{ gettext('show_all_reviews', lang) }}</button>
+                    <button onclick="toggleAllReviews()" class="btn btn-outline-primary btn-sm">
+                        {{ gettext('show_all_reviews', lang) }}
+                    </button>
+
                     <div id="hidden-reviews" style="display:none;" class="mt-3">
                         {% for review in hotel.reviews[3:] %}
-                            <div class="border p-3 mb-2">
-                                <strong>{{ review.user }}:</strong> 
-                                <p>{{ review.text }}</p>
-                                {% if review.photos %}
-                                    <div class="row">
+                            <div class="border p-3 mb-2 rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ review.user }}</strong>
+                                        {% if review.source == 'google' %}
+                                            <span class="badge bg-secondary ms-2">{{ gettext('imported_from_google', lang) }}</span>
+                                        {% endif %}
+                                        <span class="text-muted small ms-2">{{ review.date|default("") }}</span>
+                                    </div>
+                                    <div class="text-warning">
+                                        {% for i in range(review.rating|int) %}
+                                            <i class="bi bi-star-fill"></i>
+                                        {% endfor %}
+                                        {% for i in range(5 - (review.rating|int)) %}
+                                            <i class="bi bi-star"></i>
+                                        {% endfor %}
+                                        <span class="ms-2 small">{{ review.rating }}/5</span>
+  </div>
+                                </div>
+
+                                <p class="mt-2 mb-1">{{ review.text }}</p>
+
+                                {% if review.photos and review.photos|length > 0 %}
+                                    <div class="row mt-2">
                                         {% for p in review.photos %}
-                                            <div class="col-md-6">
-                                                <img src="{{ url_for('static', filename='uploads/' + p) }}" class="img-fluid mb-2" alt="Review Photo" style="max-width: 150px;">
+                                            <div class="col-6 col-md-4 mb-2">
+                                                <img src="data:image/jpeg;base64,{{ p }}"
+                                                     class="img-fluid rounded review-photo-thumb"
+                                                     style="height: 100px; width: 100%; object-fit: cover; cursor: pointer;"
+                                                     data-photo-index="{{ loop.index0 }}"
+                                                     data-photos='{{ review.photos|tojson }}'
+                                                     alt="Review photo">
                                             </div>
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <p class="text-end mt-2 mb-0">{{ gettext('rating', lang) }}: {{ review.rating }}/5 ⭐</p>
                             </div>
                         {% endfor %}
                     </div>
@@ -117,6 +161,8 @@
             {% endif %}
         </ul>
     </div>
+
+    <!-- ==================== БРОНИРОВАНИЕ ==================== -->
     <div class="col-md-4">
         {% if 'user_id' in session %}
             <div class="card">
@@ -134,8 +180,90 @@
     </div>
 </div>
 
+<!-- ==================== LIGHTBOX (как в search.html) ==================== -->
+<div id="photo-lightbox" class="lightbox">
+    <span class="close">×</span>
+    <div class="lightbox-content">
+        <div class="lightbox-main">
+            <button class="nav-btn prev">Previous</button>
+            <img id="lightbox-img" src="" alt="">
+            <button class="nav-btn next">Next</button>
+        </div>
+        <div id="lightbox-thumbs" class="lightbox-thumbs"></div>
+    </div>
+</div>
+
+<!-- ==================== JS ==================== -->
 <script>
-    function toggleAllReviews() {
+    // Данные отеля
+    window.currentHotelPhotos = {{ hotel.photos|tojson }};
+
+    // Фото отеля
+    document.querySelectorAll('.hotel-photo-thumb').forEach(img => {
+        img.addEventListener('click', function () {
+            const index = parseInt(this.dataset.photoIndex);
+            openLightbox(window.currentHotelPhotos, index);
+        });
+    });
+
+    // Фото в отзыве
+    document.querySelectorAll('.review-photo-thumb').forEach(img => {
+        img.addEventListener('click', function () {
+            const photos = JSON.parse(this.dataset.photos);
+            const index = parseInt(this.dataset.photoIndex);
+            openLightbox(photos, index);
+        });
+    });
+
+    function openLightbox(photos, startIndex) {
+        const lightbox = document.getElementById('photo-lightbox');
+        const mainImg = document.getElementById('lightbox-img');
+        const thumbsContainer = document.getElementById('lightbox-thumbs');
+        let currentIndex = startIndex;
+
+        thumbsContainer.innerHTML = '';
+        photos.forEach((photo, i) => {
+            const thumb = document.createElement('img');
+            thumb.src = `data:image/jpeg;base64,${photo}`;
+            thumb.className = 'thumb';
+            if (i === currentIndex) thumb.classList.add('active');
+            thumb.addEventListener('click', () => {
+                currentIndex = i;
+                updateMainImage();
+            });
+            thumbsContainer.appendChild(thumb);
+        });
+
+        function updateMainImage() {
+            mainImg.src = `data:image/jpeg;base64,${photos[currentIndex]}`;
+            document.querySelectorAll('.thumb').forEach((t, i) => {
+                t.classList.toggle('active', i === currentIndex);
+            });
+        }
+
+        updateMainImage();
+
+        document.querySelector('.prev').onclick = () => {
+            currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+            updateMainImage();
+        };
+        document.querySelector('.next').onclick = () => {
+            currentIndex = (currentIndex + 1) % photos.length;
+            updateMainImage();
+        };
+
+        let thumbsVisible = true;
+        mainImg.onclick = () => {
+            thumbsVisible = !thumbsVisible;
+            thumbsContainer.style.display = thumbsVisible ? 'flex' : 'none';
+        };
+
+        lightbox.style.display = 'flex';
+        document.querySelector('.close').onclick = () => lightbox.style.display = 'none';
+        lightbox.onclick = (e) => { if (e.target === lightbox) lightbox.style.display = 'none'; };
+    }
+
+    function TOGGLE_ALL_REVIEWS() {
         const hidden = document.getElementById('hidden-reviews');
         const btn = event.target;
         if (hidden.style.display === 'none') {
@@ -147,37 +275,20 @@
         }
     }
 
-    // Функция для показа toast
     function showToast(message, isError = false) {
         const toastContainer = document.getElementById('toast-container');
         const toastDiv = document.createElement('div');
         toastDiv.className = `toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0`;
         toastDiv.setAttribute('role', 'alert');
-        toastDiv.setAttribute('aria-live', 'assertive');
-        toastDiv.setAttribute('aria-atomic', 'true');
-        toastDiv.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
+        toastDiv.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
         toastContainer.appendChild(toastDiv);
-        const bsToast = new bootstrap.Toast(toastDiv);
-        bsToast.show();
-        setTimeout(() => bsToast.hide(), 3000);
+        new bootstrap.Toast(toastDiv).show();
+        setTimeout(() => toastDiv.remove(), 3000);
     }
 
-    // AJAX для смены валюты в деталях
     document.addEventListener('DOMContentLoaded', function() {
         const currencyForms = document.querySelectorAll('.currency-form');
-        const currencySymbols = {
-            'eur': '€',
-            'uah': '₴',
-            'rub': '₽',
-            'usd': '$',
-            'mdl': 'L',
-            'ron': 'lei'
-        };
+        const currencySymbols = { 'eur': 'EUR', 'uah': 'UAH', 'rub': 'RUB', 'usd': '$', 'mdl': 'L', 'ron': 'lei' };
         currencyForms.forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -185,52 +296,57 @@
                 const symbol = currencySymbols[currency];
                 const priceUsd = parseFloat(document.querySelector('.price-per-night').getAttribute('data-price-usd'));
 
-                fetch('/auth/set_currency', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'application/json'
-                    },
-                    body: 'currency=' + encodeURIComponent(currency)
-                })
-                .then(response => response.json())
+                fetch('/auth/set_currency', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'currency=' + encodeURIComponent(currency) })
+                .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        // Обновить символ валюты в кнопке
                         document.querySelector('.currency-icon').innerHTML = symbol;
-                        fetch('/search/api/convert_price', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'Accept': 'application/json'
-                            },
-                            body: `price_usd=${priceUsd}&currency=${encodeURIComponent(currency)}`
-                        })
-                        .then(response => response.json())
+                        fetch('/search/api/convert_price', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `price_usd=${priceUsd}&currency=${encodeURIComponent(currency)}` })
+                        .then(r => r.json())
                         .then(data => {
-                            if (data.error) {
-                                showToast(gettext('flash_error_prefix', '{{ lang }}') + '{{ gettext("currency_update_failed", lang) }}', true);
-                                return;
-                            }
+                            if (data.error) return showToast('Ошибка валюты', true);
                             const priceEl = document.querySelector('.price-per-night');
-                            if (priceEl) {
-                                const currentText = priceEl.innerHTML;
-                                const perNightPrefix = currentText.match(/^(.*?) \d+\.?\d* \S+/)[1];
-                                priceEl.innerHTML = `${perNightPrefix} ${data.display_price} ${data.symbol}`;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Fetch convert_price error:', error);
-                            showToast(gettext('flash_error_prefix', '{{ lang }}') + '{{ gettext("currency_update_failed", lang) }}', true);
+                            const prefix = priceEl.innerHTML.match(/^(.*?) \d+\.?\d* \S+/)[1];
+                            priceEl.innerHTML = `${prefix} ${data.display_price} ${data.symbol}`;
                         });
                     }
-                })
-                .catch(error => {
-                    console.error('Fetch set_currency error:', error);
-                    showToast(gettext('flash_error_prefix', '{{ lang }}') + '{{ gettext("currency_update_failed", lang) }}', true);
                 });
             });
         });
     });
 </script>
+
+<!-- ==================== CSS ДЛЯ LIGHTBOX ==================== -->
+<style>
+    .lightbox {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.9);
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    .lightbox-content { max-width: 90%; max-height: 90%; }
+    .lightbox-main { position: relative; text-align: center; }
+    #lightbox-img { max-width: 100%; max-height: 70vh; border-radius: 8px; }
+    .nav-btn {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        background: rgba(0,0,0,0.5); color: white; border: none;
+        padding: 10px; font-size: 18px; cursor: pointer;
+    }
+    .prev { left: 10px; }
+    .next { right: 10px; }
+    .close { position: absolute; top: 15px; right: 25px; color: white; font-size: 40px; cursor: pointer; }
+    .lightbox-thumbs {
+        display: flex; justify-content: center; flex-wrap: wrap; margin-top: 10px; gap: 5px;
+        max-height: 100px; overflow-y: auto;
+    }
+    .thumb {
+        width: 60px; height: 60px; object-fit: cover; border: 2px solid transparent; cursor: pointer; border-radius: 4px;
+    }
+    .thumb.active { border-color: #007bff; }
+ guilt</style>
+
 {% endblock %}
