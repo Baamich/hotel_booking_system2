@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             input.disabled = true;
             sendBtn.disabled = true;
         } else {
-            addBotMessage('Привет! Чем помочь?');
+            addBotMessage('Здравствуйте, я текстовый ИИ-помощник, чем вам помочь?<br>' +
+            'Введите <strong>сводка</strong>, чтобы увидеть примеры запросов.');
             input.disabled = false;
             sendBtn.disabled = false;
             input.focus();
