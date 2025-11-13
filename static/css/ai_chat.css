@@ -1,3 +1,4 @@
+/* === ВИДЖЕТ ЧАТА === */
 #ai-chat-widget {
     position: fixed;
     bottom: 20px;
@@ -5,6 +6,7 @@
     z-index: 1050;
 }
 
+/* === КНОПКА-РОБОТ === */
 .ai-chat-toggle {
     width: 60px;
     height: 60px;
@@ -14,15 +16,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: transform 0.2s ease;
+    padding: 0;
+    overflow: hidden;
 }
 
 .ai-chat-toggle:hover {
     transform: scale(1.1);
 }
 
+/* Иконка робота — через HTML, не через ::before */
+.ai-chat-toggle .material-icons {
+    font-size: 36px;
+    color: white;
+}
+
+/* === ОКНО ЧАТА === */
 .ai-chat-box {
     position: absolute;
     bottom: 80px;
@@ -34,8 +45,9 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     display: none;
+    z-index: 1000;
 }
 
 .ai-chat-header {
@@ -47,6 +59,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.ai-chat-header .material-icons {
+    font-size: 20px;
+    margin-right: 8px;
 }
 
 .ai-chat-messages {
@@ -83,12 +100,14 @@
     border-bottom-left-radius: 4px;
 }
 
+/* === ИНПУТ === */
 .ai-chat-input-container {
     display: flex;
     padding: 12px;
     background: white;
     border-top: 1px solid #dee2e6;
     gap: 8px;
+    align-items: center;
 }
 
 .ai-chat-input-container input {
@@ -102,9 +121,10 @@
 .ai-chat-input-container input:focus {
     outline: none;
     border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0,123,255,.25);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
+/* === КНОПКА ОТПРАВКИ (САМОЛЁТИК) === */
 .send-btn {
     width: 44px;
     height: 44px;
@@ -115,20 +135,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
     cursor: pointer;
     transition: background 0.2s;
-}
-
-.send-btn::before {
-    content: 'Checkmark';
-    font-weight: bold;
+    padding: 0;
 }
 
 .send-btn:hover {
     background: #0056b3;
 }
 
+.send-btn .material-icons {
+    font-size: 20px;
+}
+
+/* === КНОПКА ПОВТОРА === */
 .retry-btn {
     background: #007bff;
     color: white;
@@ -138,8 +158,32 @@
     font-size: 0.85rem;
     margin-top: 8px;
     cursor: pointer;
+    align-self: flex-start;
 }
 
 .retry-btn:hover {
     background: #0056b3;
+}
+
+.retry-btn.localized {
+    background: #0056b3;
+}
+
+/* === СКРОЛЛБАР === */
+.ai-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }

@@ -3,7 +3,9 @@
 {% block title %}{{ gettext('search_title', lang) }}{% endblock %}
 
 <head>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/ai_chat.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_chat.css') }}">
+    <!-- MATERIAL ICONS -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 {% block content %}
@@ -94,7 +96,7 @@
 
 <!-- LIGHTBOX -->
 <div id="photo-lightbox" class="lightbox">
-    <span class="close">&times;</span>
+    <span class="close">×</span>
     <div class="lightbox-content">
         <div class="lightbox-main">
             <button class="nav-btn prev">Previous</button>
@@ -107,23 +109,24 @@
 
 <!-- ЧАТ-БОТ ИИ -->
 <div id="ai-chat-widget">
-        <button id="ai-chat-toggle" class="ai-chat-toggle" title="ИИ-помощник">
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="white" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </svg>
+    <!-- КНОПКА С ИКОНКОЙ РОБОТА -->
+    <button id="ai-chat-toggle" class="ai-chat-toggle" title="ИИ-помощник">
+        <span class="material-icons" style="font-size: 36px; color: white;">smart_toy</span>
     </button>
 
     <!-- Окошко чата -->
     <div id="ai-chat-box" class="ai-chat-box">
         <div class="ai-chat-header">
-            <span>ИИ-помощник</span>
+            <span class="material-icons" style="font-size: 20px; margin-right: 8px;">smart_toy</span>
+            ИИ-помощник
             <button id="ai-chat-close" class="btn-close btn-close-white"></button>
         </div>
         <div id="ai-chat-messages" class="ai-chat-messages"></div>
         <div class="ai-chat-input-container">
             <input type="text" id="ai-chat-input" placeholder="Напишите сообщение..." autocomplete="off">
-            <button id="ai-chat-send" class="send-btn">
-                Checkmark
+            <!-- КНОПКА ОТПРАВКИ С ИКОНКОЙ SEND -->
+            <button id="ai-chat-send" class="send-btn" title="Отправить">
+                <span class="material-icons">send</span>
             </button>
         </div>
     </div>
