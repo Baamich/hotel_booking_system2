@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>Оплата бронирования — {{ hotel_name }}</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 40px; }
+    .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .info { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+    .btn { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
+    .btn:hover { background: #218838; }
+    #error-message { color: red; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Оплата бронирования</h2>
+    <div class="info">
+      <p><strong>Отель:</strong> {{ hotel_name }}</p>
+      <p><strong>Даты:</strong> {{ date_from }} — {{ date_to }}</p>
+      <p><strong>К оплате:</strong> {{ amount }} {{ currency }}</p>
+    </div>
+
+    <form id="payment-form">
+      <div id="payment-element">
+        <!-- Stripe вставит форму -->
+      </div>
+      <button id="submit" class="btn">
+        <span id="button-text">Оплатить {{ amount }} {{ currency }}</span>
+      </button>
+      <div id="error-message"></div>
+    </form>
+  </div>
+
+  <script>
+    const stripe = Stripe("{{ publishable_key }}");
+    const elements = stripe.elements({ clientSecret: "{{ client_secret }}", locale: "{{ lang }}" });
+    const paymentElement = elements.create("payment");
+    paymentElement.mount("#payment-element");
+
+    const form = document.getElementById("payment-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,  // ← остаёмся на этой же странице после оплаты
+        },
+      });
+      if (error) {
+        document.getElementById("error-message").textContent = error.message || "Ошибка оплаты";
+      }
+    });
+  </script>
+</body>
+</html>

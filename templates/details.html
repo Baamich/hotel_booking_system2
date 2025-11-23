@@ -135,7 +135,7 @@
                                             <i class="bi bi-star"></i>
                                         {% endfor %}
                                         <span class="ms-2 small">{{ review.rating }}/5</span>
-  </div>
+                                    </div>
                                 </div>
 
                                 <p class="mt-2 mb-1">{{ review.text }}</p>
@@ -162,25 +162,63 @@
         </ul>
     </div>
 
-    <!-- ==================== БРОНИРОВАНИЕ ==================== -->
+    <!-- ==================== КОМПАКТНАЯ КАРТОЧКА БРОНИРОВАНИЯ (ПРИЛИПАЕТ К ВЕРХУ) ==================== -->
     <div class="col-md-4">
-        {% if 'user_id' in session %}
-            <div class="card">
-                <div class="card-body">
-                    <h5>{{ gettext('book', lang) }}</h5>
-                    <form method="POST" action="{{ url_for('booking.book_hotel', hotel_id=hotel._id) }}">
-                        <input type="date" name="date_from" required class="form-control mb-2" placeholder="{{ gettext('date_from', lang) }}">
-                        <input type="date" name="date_to" required class="form-control mb-2" placeholder="{{ gettext('date_to', lang) }}">
-                        <button type="submit" class="btn btn-success w-100">{{ gettext('book_btn', lang) }}</button>
-                    </form>
+        <div class="sticky-top" style="top: 20px; z-index: 100;">
+            {% if 'user_id' in session %}
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h5 class="mb-0 fw-bold">{{ gettext('book_room', lang)|default('Забронировать') }}</h5>
+                        <small class="opacity-90">{{ hotel.display_price }} {{ currency_symbol }} / ночь</small>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="booking-form">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">{{ gettext('date_from', lang) }}</label>
+                                <input type="date" id="date_from" required class="form-control form-control-sm">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">{{ gettext('date_to', lang) }}</label>
+                                <input type="date" id="date_to" required class="form-control form-control-sm">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">{{ gettext('first_name', lang)|default('Имя') }}</label>
+                                <input type="text" id="first_name" required class="form-control form-control-sm" placeholder="Иван">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">{{ gettext('last_name', lang)|default('Фамилия') }}</label>
+                                <input type="text" id="last_name" required class="form-control form-control-sm" placeholder="Иванов">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">{{ gettext('phone', lang)|default('Телефон') }}</label>
+                                <input type="tel" id="phone" required class="form-control form-control-sm" placeholder="+373 __ ___ ___">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">{{ gettext('email', lang)|default('Email') }}</label>
+                                <input type="email" id="guest_email" required class="form-control form-control-sm" value="{{ session.get('email', '') }}">
+                            </div>
+                            <div id="total-price" class="alert alert-success text-center fw-bold py-2 mb-3 d-none"></div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-3 rounded-3">
+                                {{ gettext('proceed_to_payment', lang)|default('Оплатить бронь') }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
-        <a href="{{ url_for('search.search_hotels') }}" class="btn btn-secondary mt-3">{{ gettext('back', lang) }}</a>
+            {% else %}
+                <div class="card border-info shadow">
+                    <div class="card-body text-center p-4">
+                        <p class="mb-3">{{ gettext('login_to_book', lang)|default('Войдите, чтобы забронировать') }}</p>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100">Войти</a>
+                    </div>
+                </div>
+            {% endif %}
+
+            <a href="{{ url_for('search.search_hotels') }}" class="btn btn-outline-secondary mt-3 w-100">Назад к поиску</a>
+        </div>
     </div>
 </div>
 
-<!-- ==================== LIGHTBOX (как в search.html) ==================== -->
+<!-- ==================== LIGHTBOX ==================== -->
 <div id="photo-lightbox" class="lightbox">
     <span class="close">×</span>
     <div class="lightbox-content">
@@ -195,10 +233,8 @@
 
 <!-- ==================== JS ==================== -->
 <script>
-    // Данные отеля
     window.currentHotelPhotos = {{ hotel.photos|tojson }};
 
-    // Фото отеля
     document.querySelectorAll('.hotel-photo-thumb').forEach(img => {
         img.addEventListener('click', function () {
             const index = parseInt(this.dataset.photoIndex);
@@ -206,7 +242,6 @@
         });
     });
 
-    // Фото в отзыве
     document.querySelectorAll('.review-photo-thumb').forEach(img => {
         img.addEventListener('click', function () {
             const photos = JSON.parse(this.dataset.photos);
@@ -263,7 +298,7 @@
         lightbox.onclick = (e) => { if (e.target === lightbox) lightbox.style.display = 'none'; };
     }
 
-    function TOGGLE_ALL_REVIEWS() {
+    function toggleAllReviews() {
         const hidden = document.getElementById('hidden-reviews');
         const btn = event.target;
         if (hidden.style.display === 'none') {
@@ -276,16 +311,89 @@
     }
 
     function showToast(message, isError = false) {
-        const toastContainer = document.getElementById('toast-container');
+        const toastContainer = document.getElementById('toast-container') || document.body;
         const toastDiv = document.createElement('div');
-        toastDiv.className = `toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0`;
-        toastDiv.setAttribute('role', 'alert');
+        toastDiv.className = `toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0 position-fixed top-0 start-50 translate-middle-x`;
+        toastDiv.style.zIndex = 9999;
         toastDiv.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
         toastContainer.appendChild(toastDiv);
         new bootstrap.Toast(toastDiv).show();
-        setTimeout(() => toastDiv.remove(), 3000);
+        setTimeout(() => toastDiv.remove(), 5000);
     }
 
+    // === ГЛАВНАЯ ЛОГИКА БРОНИРОВАНИЯ ===
+    document.getElementById('booking-form')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const dateFrom = document.getElementById('date_from').value;
+        const dateTo = document.getElementById('date_to').value;
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('guest_email').value.trim();
+
+        if (!dateFrom || !dateTo || !firstName || !lastName || !phone || !email) {
+            showToast('Заполните все поля', true);
+            return;
+        }
+
+        const days = (new Date(dateTo) - new Date(dateFrom)) / (86400000);
+        if (days <= 0) {
+            showToast('Неверные даты', true);
+            return;
+        }
+
+        const priceUsdPerNight = parseFloat(document.querySelector('.price-per-night').dataset.priceUsd);
+        const totalUsd = (priceUsdPerNight * days).toFixed(2);
+
+        const totalEl = document.getElementById('total-price');
+        totalEl.innerText = `К оплате: ${totalUsd} USD`;
+        totalEl.classList.remove('d-none');
+
+        try {
+            const response = await fetch('http://localhost:5002/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hotel_id: "{{ hotel._id }}",
+                    hotel_name: "{{ hotel.name }}",
+                    date_from: dateFrom,
+                    date_to: dateTo,
+                    total_amount_usd: parseFloat(totalUsd),
+                    currency: "usd",
+                    user_id: "{{ session['user_id'] }}",
+                    guest: {
+                        first_name: firstName,
+                        last_name: lastName,
+                        phone: phone,
+                        email: email
+                    },
+                    success_url: window.location.origin + "/booking-success",
+                    cancel_url: window.location.href
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.payment_url) {
+                window.location.href = data.payment_url +
+                    `?hotel_name={{ hotel.name|urlencode }}` +
+                    `&date_from=${dateFrom}&date_to=${dateTo}` +
+                    `&lang={{ lang }}` +
+                    `&guest_name=${encodeURIComponent(firstName + " " + lastName)}` +
+                    `&guest_email=${encodeURIComponent(email)}` +
+                    `&guest_phone=${encodeURIComponent(phone)}` +
+                    `&total=${totalUsd}`;
+            } else {
+                showToast('Ошибка: ' + (data.error || 'неизвестно'), true);
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Не удалось связаться с платёжным сервисом. Убедитесь, что он запущен на порту 5002', true);
+        }
+    });
+
+    // Старая валюта (не трогаем)
     document.addEventListener('DOMContentLoaded', function() {
         const currencyForms = document.querySelectorAll('.currency-form');
         const currencySymbols = { 'eur': 'EUR', 'uah': 'UAH', 'rub': 'RUB', 'usd': '$', 'mdl': 'L', 'ron': 'lei' };
@@ -306,7 +414,7 @@
                         .then(data => {
                             if (data.error) return showToast('Ошибка валюты', true);
                             const priceEl = document.querySelector('.price-per-night');
-                            const prefix = priceEl.innerHTML.match(/^(.*?) \d+\.?\d* \S+/)[1];
+                            const prefix = priceEl.innerHTML.match(/^(.*?) \\d+\\.?\\d* \\S+/)[1];
                             priceEl.innerHTML = `${prefix} ${data.display_price} ${data.symbol}`;
                         });
                     }
@@ -316,37 +424,18 @@
     });
 </script>
 
-<!-- ==================== CSS ДЛЯ LIGHTBOX ==================== -->
 <style>
-    .lightbox {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0; top: 0; width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.9);
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
+    .lightbox { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; flex-direction: column; }
     .lightbox-content { max-width: 90%; max-height: 90%; }
     .lightbox-main { position: relative; text-align: center; }
     #lightbox-img { max-width: 100%; max-height: 70vh; border-radius: 8px; }
-    .nav-btn {
-        position: absolute; top: 50%; transform: translateY(-50%);
-        background: rgba(0,0,0,0.5); color: white; border: none;
-        padding: 10px; font-size: 18px; cursor: pointer;
-    }
+    .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; font-size: 18px; cursor: pointer; }
     .prev { left: 10px; }
     .next { right: 10px; }
     .close { position: absolute; top: 15px; right: 25px; color: white; font-size: 40px; cursor: pointer; }
-    .lightbox-thumbs {
-        display: flex; justify-content: center; flex-wrap: wrap; margin-top: 10px; gap: 5px;
-        max-height: 100px; overflow-y: auto;
-    }
-    .thumb {
-        width: 60px; height: 60px; object-fit: cover; border: 2px solid transparent; cursor: pointer; border-radius: 4px;
-    }
+    .lightbox-thumbs { display: flex; justify-content: center; flex-wrap: wrap; margin-top: 10px; gap: 5px; max-height: 100px; overflow-y: auto; }
+    .thumb { width: 60px; height: 60px; object-fit: cover; border: 2px solid transparent; cursor: pointer; border-radius: 4px; }
     .thumb.active { border-color: #007bff; }
- guilt</style>
+</style>
 
 {% endblock %}

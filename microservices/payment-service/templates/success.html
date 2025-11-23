@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Бронь подтверждена!</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            min-height: 100vh;
+        }
+        .card { 
+            max-width: 560px; 
+            margin: 0 auto; 
+            padding: 40px; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
+        }
+        .ticket { 
+            font-size: 38px; 
+            font-weight: bold; 
+            color: #28a745; 
+            letter-spacing: 5px; 
+            margin: 25px 0; 
+            background: #f8fff8; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 2px dashed #28a745;
+        }
+        .btn { 
+            display: inline-block; 
+            padding: 14px 40px; 
+            background: #007bff; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 12px; 
+            margin-top: 25px; 
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn:hover { background: #0056b3; transform: translateY(-2px); }
+        .note {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff8e1;
+            border-radius: 10px;
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 style="color: #28a745;">Бронь успешно подтверждена!</h1>
+        <p>Ваш отель: <strong>{{ hotel_name }}</strong></p>
+        <div class="ticket">{{ ticket }}</div>
+        <p>Билет отправлен на вашу почту: <strong>{{ guest_name }}</strong></p>
+        
+        <div class="note">
+            Письмо отправлено! <br>
+            Если не видите его во «Входящих» — проверьте папку <strong>«Спам»</strong> или <strong>«Промоакции»</strong> (в Gmail).
+        </div>
+
+        <a href="http://127.0.0.1:5000/search/hotels" class="btn">
+            Вернуться к поиску отелей
+        </a>
+    </div>
+</body>
+</html>
