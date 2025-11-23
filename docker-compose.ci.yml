@@ -1,0 +1,60 @@
+version: '3.9'
+
+networks:
+  hotel:
+    driver: bridge
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=hotel_db
+    networks:
+      - hotel
+
+  main-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: main-app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/hotel_db
+    depends_on:
+      - mongodb
+    networks:
+      - hotel
+
+  ai-assistant:
+    build:
+      context: ./microservices/ai_assistant
+      dockerfile: Dockerfile
+    container_name: ai-assistant
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    networks:
+      - hotel
+
+  payment-service:
+    build:
+      context: ./microservices/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    ports:
+      - "5002:5002"
+    environment:
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - MAILRU_EMAIL=${MAILRU_EMAIL}
+      - MAILRU_APP_PASSWORD=${MAILRU_APP_PASSWORD}
+    depends_on:
+      - mongodb
+    networks:
+      - hotel
