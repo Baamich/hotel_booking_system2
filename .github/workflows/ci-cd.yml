@@ -1,0 +1,71 @@
+name: CI/CD — Build & Push Docker Images
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Скачиваем код
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Логин в Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Устанавливаем Docker Buildx (для мультиплатформенности, но и так работает)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Запускаем все контейнеры и проверяем health-эндпоинты
+      - name: Start services with Docker Compose
+        run: |
+          docker compose -f docker-compose.ci.yml up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Ожидаем запуска сервисов..."
+          sleep 30
+
+          echo "Проверяем main-app (5000)..."
+          curl -f http://localhost:5000/health || exit 1
+
+          echo "Проверяем ai-assistant (5001)..."
+          curl -f http://localhost:5001/health || exit 1
+
+          echo "Проверяем payment-service (5002)..."
+          curl -f http://localhost:5002/health || exit 1
+
+          echo "Все сервисы живы!"
+
+      # 5. Собираем и пушим образы ТОЛЬКО при пуше в main/master
+      - name: Build and push Docker images
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          # Замени hotelbookingmd на свой настоящий Docker Hub логин!
+          TAG=latest
+
+          docker build -t hotelbookingmd/hotel-main:$TAG .
+          docker build -t hotelbookingmd/hotel-ai:$TAG ./microservices/ai_assistant
+          docker build -t hotelbookingmd/hotel-payment:$TAG ./microservices/payment-service
+
+          docker push hotelbookingmd/hotel-main:$TAG
+          docker push hotelbookingmd/hotel-ai:$TAG
+          docker push hotelbookingmd/hotel-payment:$TAG
+
+          echo "Все образы успешно залиты в Docker Hub!"
+
+      # 6. Останавливаем контейнеры (чтобы не висели)
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose -f docker-compose.ci.yml down -v || true

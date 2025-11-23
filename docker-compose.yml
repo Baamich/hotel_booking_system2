@@ -1,0 +1,62 @@
+version: '3.8'
+
+networks:
+  hotel:
+    driver: bridge
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - hotel
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: hotel_db
+
+  main-app:
+    build: .
+    container_name: main-app
+    ports:
+      - "5000:5000"
+    networks:
+      - hotel
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/hotel_db
+      - FLASK_ENV=production
+    depends_on:
+      - mongo
+
+  ai-assistant:
+    build: ./microservices/ai_assistant
+    container_name: ai-assistant
+    ports:
+      - "5001:5001"
+    networks:
+      - hotel
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/hotel_db
+    depends_on:
+      - mongo
+
+  payment-service:
+    build: ./microservices/payment-service
+    container_name: payment-service
+    ports:
+      - "5002:5002"
+    networks:
+      - hotel
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/hotel_db
+      - STRIPE_SECRET_KEY=sk_test_51SVAvNPrt0uoZqs8Rd5BsF8Yqj2BDvrFrpg0yQGbFiUotoCQKMzngONLDd8skSZevmQ9S6LnII4HYf77aE0Ju2Aw006mWdHvk4
+      - STRIPE_PUBLISHABLE_KEY=pk_test_51SVAvNPrt0uoZqs8YO5zwVywAZrxuVuzVdzjVt1mSOCtqwQNsgIRCbNesA4JHNNa5ZMTH6vjKltCFGMoawwoLx3c00IrDvglGG
+      - MAILRU_EMAIL=hotelbook.noreply@mail.ru
+      - MAILRU_APP_PASSWORD=w8YJMnVx7bdlOxI0gsvr
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

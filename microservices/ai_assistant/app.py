@@ -5,24 +5,24 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# === ДОБАВЛЯЕМ КОРЕНЬ ПРОЕКТА ===
+# === ПУТЬ К КОРНЮ ===
 current_dir = os.path.dirname(os.path.abspath(__file__))
-microservices_dir = os.path.dirname(current_dir)
-project_root = os.path.dirname(microservices_dir)
+project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-print(f"[APP] Путь к корню: {project_root}")
 
-# === ИМПОРТИРУЕМ process_message И gettext ===
 from chat_service import process_message
-from translations import gettext  # <-- ГЛОБАЛЬНЫЙ gettext
+from translations import gettext
 
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok", "service": "ai-assistant"}), 200
+
 @app.route('/chat', methods=['OPTIONS', 'POST'])
 def chat():
-    # === CORS preflight ===
     if request.method == 'OPTIONS':
         return '', 200
 
@@ -30,7 +30,6 @@ def chat():
     user_message = data.get('message', '').strip()
     lang = data.get('lang', 'eng')
 
-    # === PING ===
     if user_message == 'ping':
         return jsonify({'reply': 'pong'}), 200
 
@@ -38,7 +37,6 @@ def chat():
         return jsonify({'reply': gettext('type_message', lang)}), 200
 
     try:
-        # ПЕРЕДАЁМ ТОЛЬКО message и lang
         reply = process_message(user_message, lang)
         return jsonify({'reply': reply}), 200
     except Exception as e:

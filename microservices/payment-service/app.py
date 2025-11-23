@@ -9,46 +9,49 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import uuid
-import time  # для задержки
+import time
 
-load_dotenv(dotenv_path=r"D:\VsProject\hotel_booking_system\microservices\payment-service\.env")
+# Загружаем .env из текущей директории (в Docker будет из environment variables)
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["http://127.0.0.1:5000", "http://localhost:5000"], supports_credentials=True)
+# Открываем CORS полностью для CI и простоты (в продакшене можешь сузить)
+CORS(app, origins=["*"], supports_credentials=True)
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
-# Твой mail.ru (остаётся)
+# Настройки почты
 MAILRU_SMTP_HOST = "smtp.mail.ru"
 MAILRU_SMTP_PORT = 465
 MAILRU_EMAIL = os.getenv("MAILRU_EMAIL")
 MAILRU_APP_PASSWORD = os.getenv("MAILRU_APP_PASSWORD")
+
 
 def generate_ticket():
     prefix = "HB-"
     code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=9))
     return prefix + code[:4] + code[4:].lower()
 
-# Генерация уникального ID для письма (UUID + случайный код)
+
 def generate_message_id():
-    uuid_part = str(uuid.uuid4())[:8]  # короткий UUID
-    random_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))  # случайный 6-символьный ID
+    uuid_part = str(uuid.uuid4())[:8]
+    random_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     return f"{uuid_part}-{random_code}"
+
 
 def send_email(to_email, guest_name, hotel_name, date_from, date_to, total, ticket):
     if not MAILRU_EMAIL or not MAILRU_APP_PASSWORD:
         print("Mail.ru не настроен — письмо не отправлено")
         return
 
-    # УНИКАЛЬНЫЙ ID ДЛЯ ЭТОГО ПИСЬМА
     message_id = generate_message_id()
-    random_delay = random.uniform(1, 3)  # случайная задержка 1-3 сек
+    random_delay = random.uniform(1, 3)
 
     msg = MIMEMultipart()
     msg['From'] = f"HotelBook <{MAILRU_EMAIL}>"
     msg['To'] = to_email
-    msg['Subject'] = f"Бронь подтверждена! #{ticket} (ID: {message_id})"  # уникальная тема
+    msg['Subject'] = f"Бронь подтверждена! #{ticket} (ID: {message_id})"
 
     body = f"""
 Здравствуйте, {guest_name}!
@@ -60,7 +63,7 @@ def send_email(to_email, guest_name, hotel_name, date_from, date_to, total, tick
 Сумма: {total:.2f} USD
 Тикет: {ticket}
 
-Уникальный ID брони: {message_id}  # ← случайный ID для уникальности
+Уникальный ID брони: {message_id}
 
 Спасибо, что выбрали HotelBook!
 
@@ -68,14 +71,14 @@ def send_email(to_email, guest_name, hotel_name, date_from, date_to, total, tick
 Команда HotelBook
 https://hotelbook.md
 
-[UUID: {str(uuid.uuid4())}]  # ← полный UUID для антиспама
+[UUID: {str(uuid.uuid4())}]
     """.strip()
 
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
     try:
         print(f"Отправка уникального письма на {to_email} (ID: {message_id})... задержка {random_delay:.1f}с")
-        time.sleep(random_delay)  # задержка, чтобы не было подозрительно
+        time.sleep(random_delay)
 
         server = smtplib.SMTP_SSL(MAILRU_SMTP_HOST, MAILRU_SMTP_PORT)
         server.login(MAILRU_EMAIL, MAILRU_APP_PASSWORD)
@@ -86,16 +89,23 @@ https://hotelbook.md
     except Exception as e:
         print(f"Ошибка mail.ru: {e}")
 
-# SMS — вывод в консоль с UUID (потом легко добавить локальный способ)
+
 def send_sms(phone, guest_name, hotel_name, ticket, date_from="неизвестно"):
     sms_uuid = str(uuid.uuid4())[:8]
     message = f"SMS ID {sms_uuid}: HotelBook: Бронь #{ticket} в {hotel_name} подтверждена! Заезд {date_from}. Спасибо, {guest_name.split()[0]}!"
     print(f"[SMS ОТПРАВЛЕНО] На {phone}: {message}")
-    # Здесь можно добавить локальный модем или Android-бот, если нужно
+
+
+# === НОВЫЙ HEALTH-ЭНДПОИНТ (ОБЯЗАТЕЛЬНО ДЛЯ CI) ===
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok", "service": "payment-service"}), 200
+
 
 @app.route("/")
 def index():
     return "Payment Service работает! Порт 5002"
+
 
 @app.route("/create-payment", methods=["POST"])
 def create_payment():
@@ -125,6 +135,7 @@ def create_payment():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/pay/<payment_intent_id>")
 def pay_page(payment_intent_id):
@@ -162,6 +173,8 @@ def pay_page(payment_intent_id):
         print(f"Ошибка в pay_page: {e}")
         return "Ошибка платежа", 400
 
+
 if __name__ == "__main__":
     print("Запуск Payment Service на порту 5002...")
-    app.run(port=5002, debug=True)
+    # Важно: host='0.0.0.0' — чтобы было видно из Docker-сети
+    app.run(host="0.0.0.0", port=5002, debug=False)
