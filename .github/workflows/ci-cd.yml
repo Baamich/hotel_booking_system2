@@ -51,16 +51,15 @@ jobs:
       - name: Build and push Docker images
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
-          # Замени hotelbookingmd на свой настоящий Docker Hub логин!
           TAG=latest
 
-          docker build -t hotelbookingmd/hotel-main:$TAG .
-          docker build -t hotelbookingmd/hotel-ai:$TAG ./microservices/ai_assistant
-          docker build -t hotelbookingmd/hotel-payment:$TAG ./microservices/payment-service
+          docker build -t baamich/hotel-main:$TAG .
+          docker build -t baamich/hotel-ai:$TAG ./microservices/ai_assistant
+          docker build -t baamich/hotel-payment:$TAG ./microservices/payment-service
 
-          docker push hotelbookingmd/hotel-main:$TAG
-          docker push hotelbookingmd/hotel-ai:$TAG
-          docker push hotelbookingmd/hotel-payment:$TAG
+          docker push baamich/hotel-main:$TAG
+          docker push baamich/hotel-ai:$TAG
+          docker push baamich/hotel-payment:$TAG
 
           echo "Все образы успешно залиты в Docker Hub!"
 
